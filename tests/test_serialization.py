@@ -9,7 +9,7 @@ from datenstrom_collector.event import CollectorPayload, to_thrift, to_avro, fro
 
 def load_data():
     current_dir = os.path.dirname(os.path.realpath(__file__))
-    with open(os.path.join(current_dir, "config.py")) as f:
+    with open(os.path.join(current_dir, "test_data.json")) as f:
         test_data = json.load(f)
     assert test_data["magic"] == "magic"
     return {

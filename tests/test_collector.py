@@ -1,6 +1,6 @@
 import os
 
-config_file = os.path.join(os.path.dirname(__file__), "config.py")
+config_file = os.path.join(os.path.dirname(__file__), "config.json")
 os.environ["DATENSTROM_CONFIG"] = config_file
 
 from fastapi.testclient import TestClient

@@ -1,11 +1,11 @@
 import os
 import logging
-import sys
+import orjson
 
-import importlib.util
-from typing import Optional, List
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field, AliasChoices, ImportString
+from pathlib import Path
+from typing import Optional, List, Any, Dict, Tuple, Type, Literal
+from pydantic_settings import BaseSettings, SettingsConfigDict, PydanticBaseSettingsSource
+from pydantic.fields import FieldInfo
 from functools import lru_cache
 
 
@@ -13,8 +13,67 @@ _config_dir = os.path.dirname(os.path.realpath(__file__))
 _base_dir = os.path.abspath(os.path.join(_config_dir, ".."))
 
 
+class JsonConfigSettingsSource(PydanticBaseSettingsSource):
+    """
+    A simple settings source class that loads variables from a JSON file
+    at the project's root.
+
+    Here we happen to choose to use the `env_file_encoding` from Config
+    when reading `config.json`
+    """
+
+    def get_config_file_path(self) -> Optional[Path]:
+        config_file = os.environ.get("DATENSTROM_CONFIG", None)
+        if not config_file:
+            # try config.json in current directory
+            config_file_path = os.path.join(os.getcwd(), "config.json")
+            if os.path.exists(config_file_path):
+                return Path(config_file_path)
+            return None
+        else:
+            # raise error if file does not exist
+            if not os.path.exists(config_file):
+                raise FileNotFoundError(f"Config file {config_file} not found")
+        return Path(config_file)
+
+    def get_field_value(
+        self, field: FieldInfo, field_name: str
+    ) -> Tuple[Any, str, bool]:
+        encoding = self.config.get('env_file_encoding')
+        config_file_path = self.get_config_file_path()
+        if not config_file_path:
+            return None, field_name, False
+
+        file_content_json = orjson.loads(
+            config_file_path.read_text(encoding)
+        )
+        field_value = file_content_json.get(field_name)
+        return field_value, field_name, False
+
+    def prepare_field_value(
+        self, field_name: str, field: FieldInfo, value: Any, value_is_complex: bool
+    ) -> Any:
+        print(field_name, field, value, value_is_complex)
+        return value
+
+    def __call__(self) -> Dict[str, Any]:
+        d: Dict[str, Any] = {}
+
+        for field_name, field in self.settings_cls.model_fields.items():
+            field_value, field_key, value_is_complex = self.get_field_value(
+                field, field_name
+            )
+            field_value = self.prepare_field_value(
+                field_name, field, field_value, value_is_complex
+            )
+            if field_value is not None:
+                d[field_key] = field_value
+
+        return d
+
+
 class BaseConfig(BaseSettings):
-    model_config = SettingsConfigDict()
+    model_config = SettingsConfigDict(env_file_encoding='utf-8')
 
     base_dir: str = _base_dir
     max_bytes: int = 1000000  # 1 MB
@@ -24,11 +83,11 @@ class BaseConfig(BaseSettings):
     ]
     enable_redirect_tracking: bool = False
 
-    record_format: str = Field(validation_alias=AliasChoices("thrift", "avro"))
-    sink: str = Field(validation_alias=AliasChoices("dev", "kafka"))
+    record_format: Literal["thrift", "avro"]
+    sink: Literal["dev", "kafka"]
 
     kafka_topic: str = "datenstrom_raw"
-    kafka_brokers: str = Field()
+    kafka_brokers: str
 
     cookie_enabled: bool = True
     cookie_expiration_days: int = 365
@@ -40,6 +99,22 @@ class BaseConfig(BaseSettings):
     cookie_domains: Optional[List[str]] = None
     cookie_fallback_domain: Optional[str] = None
 
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: Type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> Tuple[PydanticBaseSettingsSource, ...]:
+        return (
+            init_settings,
+            JsonConfigSettingsSource(settings_cls),
+            env_settings,
+            dotenv_settings,
+            file_secret_settings,
+        )
 
 class DefaultConfig(BaseConfig):
     record_format: str = "avro"
@@ -51,17 +126,7 @@ class DefaultConfig(BaseConfig):
 
 @lru_cache()
 def get_settings():
-    config_file = os.environ.get("DATENSTROM_CONFIG", None)
-    config_cls = DefaultConfig
-
-    if config_file:
-        spec = importlib.util.spec_from_file_location("CustomConfig", config_file)
-        custom_config_cls = importlib.util.module_from_spec(spec)
-        sys.modules["CustomConfig"] = custom_config_cls
-        spec.loader.exec_module(custom_config_cls)
-        config_cls = custom_config_cls.Config
-        logging.warning(f"Using config file: {config_file}")
-
+    config_cls = BaseConfig
     return config_cls()
 
 
