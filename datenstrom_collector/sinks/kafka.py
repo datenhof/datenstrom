@@ -19,6 +19,8 @@ class KafkaSink(Sink):
     def __init__(self, config):
         """Initialize."""
         super().__init__(config)
+        if not config.kafka_brokers:
+            raise ValueError("Missing Kafka brokers")
         self.bootstrap_servers = config.kafka_brokers
         self.topic = config.kafka_topic
         self.counter = dict(ok=0, err=0, last_reset=datetime.now(timezone.utc))

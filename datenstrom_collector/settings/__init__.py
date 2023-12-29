@@ -53,7 +53,6 @@ class JsonConfigSettingsSource(PydanticBaseSettingsSource):
     def prepare_field_value(
         self, field_name: str, field: FieldInfo, value: Any, value_is_complex: bool
     ) -> Any:
-        print(field_name, field, value, value_is_complex)
         return value
 
     def __call__(self) -> Dict[str, Any]:
@@ -87,7 +86,7 @@ class BaseConfig(BaseSettings):
     sink: Literal["dev", "kafka"]
 
     kafka_topic: str = "datenstrom_raw"
-    kafka_brokers: str
+    kafka_brokers: Optional[str] = None
 
     cookie_enabled: bool = True
     cookie_expiration_days: int = 365
@@ -115,13 +114,6 @@ class BaseConfig(BaseSettings):
             dotenv_settings,
             file_secret_settings,
         )
-
-class DefaultConfig(BaseConfig):
-    record_format: str = "avro"
-    sink: str = "kafka"
-    kafka_brokers: str = "localhost:9093"
-    enable_redirect_tracking: bool = True
-
 
 
 @lru_cache()
