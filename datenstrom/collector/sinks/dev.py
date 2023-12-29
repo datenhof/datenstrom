@@ -1,5 +1,5 @@
 from typing import List
-from datenstrom_collector.sinks.base import Sink
+from datenstrom.collector.sinks.base import Sink
 
 
 class DevSink(Sink):

@@ -1,0 +1,55 @@
+[GLOBAL]
+pants_version = "2.18.0"
+backend_packages = [
+  "pants.backend.shell",
+  "pants.backend.python",
+  "pants.backend.python.typecheck.mypy",
+  "pants.backend.python.lint.flake8",
+  "pants.backend.python.lint.black",
+  "pants.backend.experimental.python",
+  "pants.backend.awslambda.python",
+  "pants.backend.docker",
+]
+pants_ignore = [
+  "activate.sh",
+]
+build_ignore = [
+  "examples/*",
+]
+
+[source]
+root_patterns = [
+  '/datenstrom',
+]
+
+[python]
+interpreter_constraints = ["CPython==3.11.*"]
+enable_resolves = true
+
+[python.resolves]
+python-default = "dependencies/python/python-default-lock.txt"
+pytest = "dependencies/python/pytest-lock.txt"
+
+[pytest]
+install_from_resolve = "pytest"
+requirements =["//dependencies/python:pytest"]
+
+[python-infer]
+use_rust_parser = true
+
+[coverage-py]
+report = ["console", "html"]
+
+[test]
+report = true
+
+[flake8]
+args = [
+  "--max-line-length", "92",
+  "--extend-ignore", "E203",
+]
+
+[black]
+args = [
+  "--line-length", "90",
+]

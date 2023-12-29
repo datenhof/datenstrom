@@ -4,7 +4,7 @@ config_file = os.path.join(os.path.dirname(__file__), "config.json")
 os.environ["DATENSTROM_CONFIG"] = config_file
 
 from fastapi.testclient import TestClient
-from datenstrom_collector.app import create_app
+from datenstrom.collector.app import create_app
 
 
 client = TestClient(create_app())

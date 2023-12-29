@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "datenstrom-collector"
+name = "datenstrom"
 version = "0.1.0"
-description = ""
+description = "Datenstrom Mono Repo"
 authors = ["Matthias <matthias@allitsch-wutte.com>"]
 readme = "README.md"
 
@@ -14,12 +14,6 @@ thriftpy2 = "^0.4.17"
 fastavro = "^1.9.1"
 orjson = "^3.9.10"
 confluent-kafka = "^2.3.0"
-
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.4.3"
-snowplow-tracker = "^1.0.1"
-httpx = "^0.26.0"
 
 [build-system]
 requires = ["poetry-core"]

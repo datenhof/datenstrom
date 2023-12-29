@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 from typing import Optional, List
 from fastapi import APIRouter, Request, Response
 
-from datenstrom_collector.event import CollectorPayload, PayloadException
+from datenstrom.common.schema.raw import CollectorPayload, PayloadException
 
 router = APIRouter()
 

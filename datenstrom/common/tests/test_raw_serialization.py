@@ -1,10 +1,7 @@
 import os
 import json
 import base64
-from datenstrom_collector.event import CollectorPayload, to_thrift, to_avro, from_thrift
-
-
-
+from datenstrom.common.schema.raw import CollectorPayload, to_thrift, to_avro, from_thrift
 
 
 def load_data():

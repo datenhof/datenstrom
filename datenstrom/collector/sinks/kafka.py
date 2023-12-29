@@ -6,7 +6,7 @@ from datetime import datetime, timezone, timedelta
 from confluent_kafka import Producer
 from threading import Thread
 
-from datenstrom_collector.sinks.base import Sink
+from datenstrom.collector.sinks.base import Sink
 
 
 COUNTER_RESET_INTERVAL = timedelta(seconds=60)
