@@ -14,6 +14,8 @@ thriftpy2 = "^0.4.17"
 fastavro = "^1.9.1"
 orjson = "^3.9.10"
 confluent-kafka = "^2.3.0"
+jsonschema = "^4.20.0"
+geoip2 = "^4.8.0"
 
 [build-system]
 requires = ["poetry-core"]

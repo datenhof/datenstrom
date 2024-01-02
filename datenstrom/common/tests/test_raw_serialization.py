@@ -6,7 +6,7 @@ from datenstrom.common.schema.raw import CollectorPayload, to_thrift, to_avro, f
 
 def load_data():
     current_dir = os.path.dirname(os.path.realpath(__file__))
-    with open(os.path.join(current_dir, "test_data.json")) as f:
+    with open(os.path.join(current_dir, "raw_data.thrift.json")) as f:
         test_data = json.load(f)
     assert test_data["magic"] == "magic"
     return {

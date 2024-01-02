@@ -172,3 +172,5 @@ node_modules/
 /.pants.*
 /dist/
 /.pids
+
+GeoLite2-City.mmdb

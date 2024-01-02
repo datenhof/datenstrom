@@ -1,13 +1,14 @@
 from typing import Optional, List
 from io import BytesIO
 import orjson
+import logging
 
 
 from thriftpy2.protocol.binary import TBinaryProtocol
 # from thriftpy2.protocol import TCompactProtocol
 
 from thriftpy2.thrift import TPayload, TType
-from fastavro import parse_schema, schemaless_writer
+from fastavro import parse_schema, schemaless_writer, schemaless_reader
 from pydantic import BaseModel, Field
 
 
@@ -19,17 +20,15 @@ SNOWPLOW_COLLECTOR_PAYLOAD_SCHEMA = (
 AVRO_SCHEMA_NAME = "CollectorPayload"
 
 
+logger = logging.getLogger(__name__)
+
+
 class PayloadException(Exception):
     pass
 
 
-class SelfDescribingJson(BaseModel):
-    event_schema: str = Field(alias="schema")
-    data: dict
-
-
 class CollectorPayload(BaseModel):
-    event_schema: str = Field(alias="schema", default=AVRO_SCHEMA_NAME)
+    schema_name: str = Field(alias="schema", default=AVRO_SCHEMA_NAME)
     ipAddress: str
     timestamp: int
     encoding: str
@@ -44,9 +43,6 @@ class CollectorPayload(BaseModel):
     contentType: Optional[str] = None
     hostname: Optional[str] = None
     networkUserId: Optional[str] = None
-
-    def get_json_body(self):
-        return orjson.loads(self.body)
 
     def split_and_serialize(self, format: str, max_size: int) -> List[bytes]:
         # try to serialize the full event
@@ -68,7 +64,7 @@ class CollectorPayload(BaseModel):
 
         self.body = temp_body
         # parse and split the body
-        parsed_body = self.get_json_body()
+        parsed_body = orjson.loads(self.body)
         # check schema and data
         if "schema" not in parsed_body:
             raise PayloadException("Missing schema in body")
@@ -85,7 +81,7 @@ class CollectorPayload(BaseModel):
             return [serialized]
 
         # split the data
-        print(f"Splitting {len(data_list)} items")
+        logger.info(f"Splitting {len(data_list)} items")
         result = []
         current_data = []
         current_body = None
@@ -121,15 +117,15 @@ class CollectorPayload(BaseModel):
 
         # splitting done
         sizes = [len(x) for x in result]
-        print(f"Split into {len(result)} items with sizes {sizes}")
+        logger.info(f"Split into {len(result)} items with sizes {sizes}")
         return result
 
     def serialize(self, format: str) -> bytes:
         if format == "thrift":
-            self.event_schema = SNOWPLOW_COLLECTOR_PAYLOAD_SCHEMA
+            self.schema_name = SNOWPLOW_COLLECTOR_PAYLOAD_SCHEMA
             return to_thrift(self)
         elif format == "avro":
-            self.event_schema = AVRO_SCHEMA_NAME
+            self.schema_name = AVRO_SCHEMA_NAME
             return to_avro(self)
         else:
             raise ValueError(f"Unknown format {format}")
@@ -282,4 +278,21 @@ def to_avro(e: CollectorPayload):
 
 
 def from_avro(b: bytes) -> CollectorPayload:
-    raise NotImplementedError
+    i = BytesIO(b)
+    d = schemaless_reader(i, AVRO_SCHEMA)
+    return CollectorPayload(
+        schema=d["schema"],
+        ipAddress=d["ipAddress"],
+        timestamp=d["timestamp"],
+        encoding=d["encoding"],
+        collector=d["collector"],
+        userAgent=d["userAgent"],
+        refererUri=d["refererUri"],
+        path=d["path"],
+        querystring=d["querystring"],
+        body=d["body"],
+        headers=d["headers"],
+        contentType=d["contentType"],
+        hostname=d["hostname"],
+        networkUserId=d["networkUserId"]
+    )
