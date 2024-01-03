@@ -1,6 +1,0 @@
-{
-    "record_format": "avro",
-    "sink": "kafka",
-    "kafka_brokers": "localhost:9093",
-    "foo": "bar"
-}
