@@ -174,3 +174,4 @@ node_modules/
 /.pids
 
 GeoLite2-City.mmdb
+/config.json

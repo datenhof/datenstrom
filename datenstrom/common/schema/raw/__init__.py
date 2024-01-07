@@ -136,6 +136,14 @@ class CollectorPayload(BaseModel):
     def to_avro(self):
         return to_avro(self)
 
+    @classmethod
+    def from_thrift(cls, b: bytes):
+        return from_thrift(b)
+
+    @classmethod
+    def from_avro(cls, b: bytes):
+        return from_avro(b)
+
 # Thrift Schema
 
 # struct CollectorPayload {

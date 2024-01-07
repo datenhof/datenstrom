@@ -1,12 +1,12 @@
 import os
 import signal
 
-from typing import List
+from typing import List, Any
 from datetime import datetime, timezone, timedelta
 from confluent_kafka import Producer
 from threading import Thread
 
-from datenstrom.collector.sinks.base import Sink
+from datenstrom.connectors.sinks.base import Sink
 
 
 COUNTER_RESET_INTERVAL = timedelta(seconds=60)
@@ -16,9 +16,9 @@ MAX_ERRORS_PER_INTERVAL = 10
 class KafkaSink(Sink):
     """Kafka sink class."""
 
-    def __init__(self, config):
+    def __init__(self, config: Any, queue_type: str):
         """Initialize."""
-        super().__init__(config)
+        super().__init__(config, queue_type=queue_type)
         if not config.kafka_brokers:
             raise ValueError("Missing Kafka brokers")
         self.bootstrap_servers = config.kafka_brokers

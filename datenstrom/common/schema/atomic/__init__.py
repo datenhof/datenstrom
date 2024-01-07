@@ -61,6 +61,13 @@ class AtomicEvent(BaseModel):
     useragent: Optional[str] = None
     language: Optional[str] = None
 
+    # Structured Event
+    category: Optional[str] = None
+    action: Optional[str] = None
+    label: Optional[str] = None
+    property: Optional[str] = None
+    value: Optional[str] = None
+
     # Data
     contexts: List[SelfDescribingContext] = Field(default_factory=list)
     event: SelfDescribingEvent

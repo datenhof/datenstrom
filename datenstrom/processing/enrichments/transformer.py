@@ -31,6 +31,11 @@ def transform_int(value: str) -> int:
     return int(value)
 
 
+def transform_float(value: str) -> float:
+    """Transform int."""
+    return float(value)
+
+
 def transform_tstamp(value: str) -> datetime:
     """Transform timestamp."""
     # first cast to int
@@ -43,6 +48,18 @@ def transform_tstamp(value: str) -> datetime:
 def transform_boolean(value: str) -> bool:
     """Transform boolean."""
     return value == "1"
+
+
+def run_transformations(event: TemporaryAtomicEvent,
+                        transformations_dict: Dict[str, Any]) -> None:
+    """Run transformations."""
+    for key, (transform, new_key) in transformations_dict.items():
+        if key in event:
+            value = event[key]
+            # we skip None values
+            if value is not None:
+                event[new_key] = transform(value)
+    return event
 
 
 TRANSFORMATIONS = {
@@ -77,47 +94,58 @@ TRANSFORMATIONS = {
 }
 
 
-TEMP_TRANSFORMATIONS = {
-    # Browser Features
-    # "f_pdf": (transform_boolean, "br_features_pdf"),
-    # "f_fla": (transform_boolean, "br_features_flash"),
-    # "f_java": (transform_boolean, "br_features_java"),
-    # "f_dir": (transform_boolean, "br_features_director"),
-    # "f_qt": (transform_boolean, "br_features_quicktime"),
-    # "f_realp": (transform_boolean, "br_features_realplayer"),
-    # "f_wma": (transform_boolean, "br_features_windowsmedia"),
-    # "f_gears": (transform_boolean, "br_features_gears"),
-    # "f_ag": (transform_boolean, "br_features_silverlight"),
-    # "cookie": (transform_boolean, "br_cookies"),
-    # "vp": (transform_string, "br_viewport"),
-
-    # Device
-    # "res": (transform_string, "dvce_screen"),
-    # "cd": (transform_string, "br_colordepth"),
-    # "tz": (transform_string, "os_timezone"),
-
+PAGE_VIEW_TRANSFORMATIONS = {
     # Page
-    # "refr": (transform_string, "page_referrer"),
+    "refr": (transform_string, "page_referrer"),
     "url": (transform_string, "page_url"),
-    # "page": (transform_string, "page_title"),
-
-    # Doc
-    # "ds": (transform_string, "doc_size"),
-    # "cs": (transform_string, "doc_charset"),
-
-    # PagePing
-    # "pp_mix": (transform_int, "pp_xoffset_min"),
-    # "pp_max": (transform_int, "pp_xoffset_max"),
-    # "pp_miy": (transform_int, "pp_yoffset_min"),
-    # "pp_may": (transform_int, "pp_yoffset_max"),
-
-    # structured event
-    # "se_ca": (transform_string, "se_category"),
-
-    # transaction and transaction item
-
+    "page": (transform_string, "page_title"),
 }
 
+
+PAGE_PING_TRANSFORMATIONS = {
+    # PagePing
+    "pp_mix": (transform_int, "pp_xoffset_min"),
+    "pp_max": (transform_int, "pp_xoffset_max"),
+    "pp_miy": (transform_int, "pp_yoffset_min"),
+    "pp_may": (transform_int, "pp_yoffset_max"),
+}
+
+
+STRUCTURED_EVENT_SCHEMA = {
+    "se_category": (transform_string, "category"),
+    "se_action": (transform_string, "action"),
+    "se_label": (transform_string, "label"),
+    "se_property": (transform_string, "property"),
+    "se_value": (transform_string, "value"),
+}
+
+
+TRANSACTION_TRANSFORMATIONS = {
+    # Transaction
+    "tid": (transform_string, "txn_id"),
+    "tr_id": (transform_string, "tr_orderid"),
+    "tr_af": (transform_string, "tr_affiliation"),
+    "tr_tt": (transform_float, "tr_total"),
+    "tr_tx": (transform_float, "tr_tax"),
+    "tr_sh": (transform_float, "tr_shipping"),
+    "tr_ci": (transform_string, "tr_city"),
+    "tr_st": (transform_string, "tr_state"),
+    "tr_co": (transform_string, "tr_country"),
+    "tr_cu": (transform_string, "tr_currency"),
+}
+
+
+TRANSACTION_ITEM_TRANSFORMATIONS = {
+    # Transaction Item
+    "ti_id": (transform_string, "ti_orderid"),
+    "ti_sk": (transform_string, "ti_sku"),
+    "ti_na": (transform_string, "ti_name"),
+    "ti_nm": (transform_string, "ti_name"),
+    "ti_ca": (transform_string, "ti_category"),
+    "ti_pr": (transform_float, "ti_price"),
+    "ti_qu": (transform_int, "ti_quantity"),
+    "ti_cu": (transform_string, "ti_currency"),
+}
 
 
 class TransformEnrichment(BaseEnrichment):
@@ -131,9 +159,3 @@ class TransformEnrichment(BaseEnrichment):
                 value = event[key]
                 if value is not None:
                     event.set_value(new_key, transform(value))
-            elif key in TEMP_TRANSFORMATIONS:
-                transform, new_key = TEMP_TRANSFORMATIONS[key]
-                # we skip None values
-                value = event[key]
-                if value is not None:
-                    event[new_key] = transform(value)

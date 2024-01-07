@@ -171,7 +171,7 @@ PAYLOAD_DATA_SCHEMA = {
             },
             "tr_cu": {
                 "type": "string"
-            },			
+            },
             "ti_id": {
                 "type": "string"
             },
@@ -362,6 +362,136 @@ PAGE_PING_SCHEMA = {
     }
 }
 
+
+STRUCTURED_EVENT_SCHEMA = {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "Schema for a structured default event",
+    "self": {
+        "vendor": "io.datenstrom",
+        "name": "structured_event",
+        "format": "jsonschema",
+        "version": "1-0-0"
+    },
+    "type": "object",
+    "properties": {
+        "category": {
+            "type": "string",
+            "maxLength": 150
+        },
+        "action": {
+            "type": "string",
+            "maxLength": 500
+        },
+        "label": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "maxLength": 500
+        },
+        "value": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "maxLength": 500
+        },
+        "property": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "maxLength": 500
+        }
+    },
+    "required": ["category", "action"],
+}
+
+
+TRANSACTION_SCHEMA = {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "Schema for a transaction",
+    "self": {
+        "vendor": "io.datenstrom",
+        "name": "transaction",
+        "format": "jsonschema",
+        "version": "1-0-0"
+    },
+    "type": "object",
+    "properties": {
+        "txn_id": {
+            "type": "string"
+        },
+        "tr_id": {
+            "type": "string"
+        },
+        "tr_af": {
+            "type": "string"
+        },
+        "tr_tt": {
+            "type": "string"
+        },
+        "tr_tx": {
+            "type": "string"
+        },
+        "tr_sh": {
+            "type": "string"
+        },
+        "tr_ci": {
+            "type": "string"
+        },
+        "tr_st": {
+            "type": "string"
+        },
+        "tr_co": {
+            "type": "string"
+        },
+        "tr_cu": {
+            "type": "string"
+        },
+    }
+}
+
+
+TRANSACTION_ITEM_SCHEMA = {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "Schema for a transaction item",
+    "self": {
+        "vendor": "io.datenstrom",
+        "name": "transaction_item",
+        "format": "jsonschema",
+        "version": "1-0-0"
+    },
+    "type": "object",
+    "properties": {
+        "ti_id": {
+            "type": "string"
+        },
+        "ti_sk": {
+            "type": "string"
+        },
+        "ti_nm": {
+            "type": "string"
+        },
+        "ti_na": {
+            "type": "string"
+        },
+        "ti_ca": {
+            "type": "string"
+        },
+        "ti_pr": {
+            "type": "string"
+        },
+        "ti_qu": {
+            "type": "string"
+        },
+        "ti_cu": {
+            "type": "string"
+        },
+    }
+}
+
+
 STATIC_JSON_SCHEMAS = {
     "com.snowplowanalytics.snowplow/payload_data/jsonschema/1-0-0": PAYLOAD_DATA_SCHEMA,
     "com.snowplowanalytics.snowplow/payload_data/jsonschema/1-0-1": PAYLOAD_DATA_SCHEMA,
@@ -375,4 +505,7 @@ STATIC_JSON_SCHEMAS = {
 
     "io.datenstrom/page_view/jsonschema/1-0-0": PAGE_VIEW_SCHEMA,
     "io.datenstrom/page_ping/jsonschema/1-0-1": PAGE_PING_SCHEMA,
+    "io.datenstrom/structured_event/jsonschema/1-0-0": STRUCTURED_EVENT_SCHEMA,
+    "io.datenstrom/transaction/jsonschema/1-0-0": TRANSACTION_SCHEMA,
+    "io.datenstrom/transaction_item/jsonschema/1-0-0": TRANSACTION_ITEM_SCHEMA,
 }

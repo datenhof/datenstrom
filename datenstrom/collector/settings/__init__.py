@@ -15,7 +15,7 @@ class BaseConfig(BaseSettings):
     model_config = SettingsConfigDict(env_file_encoding='utf-8')
 
     base_dir: str = _base_dir
-    max_bytes: int = 1000000  # 1 MB
+    max_bytes: int = 190000  # 190 kB < 256 kb after base64 for SQS
 
     vendors: List[str] = [
         "com.ruzd"
@@ -23,7 +23,11 @@ class BaseConfig(BaseSettings):
     enable_redirect_tracking: bool = False
 
     record_format: Literal["thrift", "avro"]
-    sink: Literal["dev", "kafka"]
+    sink: Literal["dev", "kafka", "sqs"]
+
+    sqs_queue_raw: Optional[str] = None
+    sqs_queue_events: Optional[str] = None
+    sqs_queue_errors: Optional[str] = None
 
     kafka_topic: str = "datenstrom_raw"
     kafka_brokers: Optional[str] = None
@@ -54,6 +58,9 @@ class BaseConfig(BaseSettings):
             dotenv_settings,
             file_secret_settings,
         )
+
+    def get(self, key, default=None):
+        return getattr(self, key, default)
 
 
 @lru_cache()

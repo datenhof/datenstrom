@@ -11,6 +11,7 @@ from datenstrom.processing.enrichments.transformer import TransformEnrichment, t
 from datenstrom.processing.enrichments.base import TemporaryAtomicEvent, BaseEnrichment
 from datenstrom.processing.enrichments.postprocessing import PostProcessingEnrichment
 from datenstrom.processing.enrichments.geoip import GeoIPEnrichment
+from datenstrom.processing.enrichments.payload import ContextExtractionEnrichment, EventExtractionEnrichment
 from datenstrom.processing.version import VERSION
 
 SP_PAYLOAD_SCHEMA_START = "iglu:com.snowplowanalytics.snowplow/payload_data/jsonschema/1"
@@ -36,13 +37,6 @@ def get_iglu_schema_for_event_type(event_type: str) -> str:
         raise ValueError(f"Invalid event type: {event_type}")
 
 
-def read_base64_json(data: str) -> Any:
-    # add missing padding to make it a multiple of 4
-    missing_padding = len(data) % 4
-    if missing_padding:
-        data += "=" * (4 - missing_padding)
-    return orjson.loads(base64.b64decode(data))
-
 
 class ProcessingInfoEnrichment(BaseEnrichment):
     def __init__(self, config: Any,
@@ -62,122 +56,6 @@ class ProcessingInfoEnrichment(BaseEnrichment):
             tenant = self.tenant_getter(event.raw_event)
             if tenant:
                 event.set_value("tenant", tenant)
-
-
-class EventExtractionEnrichment(BaseEnrichment):
-    def __init__(self, config: Any, registry: SchemaRegistry) -> None:
-        self.registry = registry
-        super().__init__(config=config)
-
-    def enrich(self, event: TemporaryAtomicEvent) -> None:
-        # at this point we should have a schema or have a self describing event
-        # in the ue_pr or ue_px field
-        print(event.raw_event)
-
-        if "schema" not in event:
-            if "ue_px" in event:
-                # self describing event in base64 encoded json
-                self_describing_event = read_base64_json(event["ue_px"])
-            elif "ue_pr" in event:
-                # self describing event in json
-                self_describing_event = orjson.loads(event["ue_pr"])
-            else:
-                raise ValueError("No schema and no schema and no self describing event")
-
-            # check if we have a schema and data
-            if "schema" not in self_describing_event:
-                raise ValueError("Missing schema in self describing event")
-            if "data" not in self_describing_event:
-                raise ValueError("Missing data in self describing event")
-            
-            # at this point we should have the schema of an unstructured event
-            # the real event is nested inside the data field
-            # we could validate the unstructred schema here
-            # self.registry.validate(schema=self_describing_event["schema"],
-            #                        data=self_describing_event["data"])
-            
-            inner_event = self_describing_event["data"]
-            # check if we have a schema and data
-            if "schema" not in inner_event:
-                raise ValueError("Missing schema in inner self describing event")
-            if "data" not in inner_event:
-                raise ValueError("Missing data in inner self describing event")
-
-            # at this point we should have the schema of the real event
-            # and can validate it
-            self.registry.validate(schema=inner_event["schema"],
-                                   data=inner_event["data"])
-            # set
-            event["schema"] = inner_event["schema"]
-            event.set_event(SelfDescribingEvent(schema=inner_event["schema"],
-                                                data=inner_event["data"]))
-
-        schema = event["schema"]
-        # parse the schema
-        iglu_schema = self.registry.parse_iglu_schema(schema)
-        event.set_value("event_vendor", iglu_schema.vendor)
-        event.set_value("event_name", iglu_schema.name)
-        event.set_value("event_format", iglu_schema.format)
-        event.set_value("event_version", iglu_schema.version)
-
-        # TODO custom logic for
-        # - page_view
-        # - page_ping
-        # - structured_event
-        # - transaction
-        # - transaction_item
-
-        # check if there is already an event
-        if not event.has_event():
-            if "event" in event:
-                # we already have an event - just cast it to self describing and validate it
-                self.registry.validate(schema=schema, data=event["event"])
-                event.set_event(SelfDescribingEvent(schema=schema, data=event["event"]))
-            else:
-                # check if we can validate the schema with the data we have
-                event_data = {k: v for k, v in event.temp_data.items() if k in self.registry.get_fields(schema)}
-                self.registry.validate(schema=schema, data=event_data)
-                # filter fields taht are part of the schema and create the event
-                event.set_event(SelfDescribingEvent(schema=schema, data=event_data))
-
-
-class ContextExtractionEnrichment(BaseEnrichment):
-    def __init__(self, config: Any, registry: SchemaRegistry) -> None:
-        self.registry = registry
-        super().__init__(config=config)
-
-    def enrich(self, event: TemporaryAtomicEvent) -> None:
-        # context can be in co (json object) or cx (base64 encoded)
-        if "cx" in event:
-            # we have a base64 encoded string
-            context = read_base64_json(event["cx"])
-        elif "co" in event:
-            # we have a json string
-            context = orjson.loads(event["co"])
-        else:
-            return
-
-        # context should have schema and data fields
-        if "schema" not in context:
-            raise ValueError("Missing schema in contexts")
-        if "data" not in context:
-            raise ValueError("Missing data in contexts")
-        
-        # we could check if schema is:
-        # iglu:com.snowplowanalytics.snowplow/contexts/jsonschema/1-0-0
-        # but for now we just assume it
-
-        context_list = context["data"]
-        for c in context_list:
-            if "schema" not in c:
-                raise ValueError("Missing schema in contexts")
-            if "data" not in c:
-                raise ValueError("Missing data in contexts")
-            schema = c["schema"]
-            data = c["data"]
-            # validate the context
-            self.registry.validate(schema=schema, data=data)
-            event.add_context(SelfDescribingContext(schema=schema, data=data))
 
 
 class RawProcessor():
@@ -231,8 +109,6 @@ class RawProcessor():
         return [{"schema": data["schema"], "event": data["data"]}]
 
     def process_raw_event(self, raw_event: CollectorPayload) -> List[AtomicEvent]:
-        print("Processing raw event")
-
         # prepare the initial event dict
         event_dict = {}
         if raw_event.ipAddress:
@@ -270,7 +146,6 @@ class RawProcessor():
                 all_events.append(ed)
         # if we dont have a body, we have a single event
         else:
-            print("Processing single GET event")
             all_events.append(event_dict)
 
         # we now have the initial data for all events
@@ -300,8 +175,3 @@ class RawProcessor():
 
             atomic_events.append(te.to_atomic_event())
         return atomic_events
-
-        # now we can do enrichments for every event
-        # TODO
-        print("Done processing raw event")
-        return [AtomicEvent.model_validate(e) for e in all_events]

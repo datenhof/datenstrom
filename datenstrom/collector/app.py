@@ -27,13 +27,16 @@ def create_app() -> FastAPI:
 
     app.middleware("http")(cors_preflight)
 
-    from datenstrom.collector.sinks.dev import DevSink
-    from datenstrom.collector.sinks.kafka import KafkaSink
+    from datenstrom.connectors.sinks.dev import DevSink
+    from datenstrom.connectors.sinks.kafka import KafkaSink
+    from datenstrom.connectors.sinks.sqs import SQSSink
 
     if config.sink == "kafka":
-        app.state.sink = KafkaSink(config=config)
+        app.state.sink = KafkaSink(config=config, queue_type="raw")
     elif config.sink == "dev":
-        app.state.sink = DevSink(config=config)
+        app.state.sink = DevSink(config=config, queue_type="raw")
+    elif config.sink == "sqs":
+        app.state.sink = SQSSink(config=config, queue_type="raw")
     else:
         raise ValueError(f"Unknown sink: {config.sink}")
 
