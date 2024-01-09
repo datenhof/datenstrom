@@ -20,6 +20,14 @@ class SchemaNotFound(Exception):
     pass
 
 
+class SchemaParts(NamedTuple):
+    type: str
+    vendor: str
+    name: str
+    format: str
+    version: str
+
+
 class IgluSchema(NamedTuple):
     vendor: str
     name: str
@@ -33,9 +41,23 @@ class IgluSchema(NamedTuple):
         return f"iglu:{self.to_path()}"
 
 
+class JsonSchema(dict):
+    pass
+
+
 class SchemaRegistry:
     def __init__(self, config: Optional[Any] = None):
         self.config = config
+        self.iglu_registries: List[str] = []
+        self.setup()
+
+    def setup(self) -> None:
+        if not self.config or not hasattr(self.config, "iglu_schema_registries"):
+            raise ValueError("Missing config with iglu_schema_registries")
+        iglu_registries = self.config.iglu_schema_registries
+        for registry in iglu_registries:
+            print(f"Registering IGLU schema registry: {registry}")
+        self.iglu_registries = iglu_registries
 
     def validate(self, schema: str, data: Any) -> None:
         t = self.get_schema_type(schema)
@@ -68,6 +90,15 @@ class SchemaRegistry:
         if schema.startswith("iglu:"):
             return "iglu"
         raise ValueError("Invalid schema - only supporting iglu schemas")
+
+    def get_schema_parts(self, schema: str) -> SchemaParts:
+        if schema.startswith("iglu:"):
+            iglu_schema = self.parse_iglu_schema(schema)
+            return SchemaParts(type="iglu", vendor=iglu_schema.vendor,
+                               name=iglu_schema.name, format=iglu_schema.format,
+                               version=iglu_schema.version)
+        raise ValueError("Invalid schema - only supporting iglu schemas")
+
 
     # IGLU SCHEMA
 
@@ -102,27 +133,32 @@ class SchemaRegistry:
             return Draft202012Validator
         raise NotImplementedError("Selecting validator based on meta schema is not implemented")
 
-    def _load_iglu_schema(self, iglu_schema: IgluSchema) -> Validator:
+    def _load_iglu_schema(self, iglu_schema: IgluSchema) -> JsonSchema:
         # check if we can get it from static schemas
         path = iglu_schema.to_path()
         if path in STATIC_JSON_SCHEMAS:
-            print(f"Hit static schema: {path}")
-            return STATIC_JSON_SCHEMAS[path]
+            print(f"Hit static builtin schema: {path}")
+            return JsonSchema(STATIC_JSON_SCHEMAS[path])
         
-        # get it from the webs
-        url = IGLU_BASE_URL + path
-        print(f"Loading schema: {url}")
-        # load the schema
-        r = requests.get(url)
-        # check if the request was successful
-        if r.status_code != 200:
-            raise SchemaNotFound(f"Failed to load schema: {url}")
-        # get content length
-        content_length = int(r.headers.get("content-length", 0))
-        if content_length > MAX_SCHEMA_SIZE:
-            raise SchemaError(f"Schema ({iglu_schema}) too large: {content_length} bytes")
-        # parse response json
-        return r.json()
+        # check if we can get it from a registered repository
+        return self._load_iglu_from_repository(iglu_schema)
+    
+    def _load_iglu_from_repository(self, iglu_schema: IgluSchema) -> JsonSchema:
+        # TODO: Implement better retry logic
+        for registry in self.iglu_registries:
+            url = registry + iglu_schema.to_path()
+            print(f"Loading schema: {url}")
+            # load the schema
+            r = requests.get(url)
+            # check if the request was successful
+            if r.status_code != 200:
+                continue
+            # get content length
+            content_length = int(r.headers.get("content-length", 0))
+            if content_length > MAX_SCHEMA_SIZE:
+                raise SchemaError(f"Schema ({iglu_schema}) too large: {content_length} bytes")
+            # parse response json
+            return JsonSchema(r.json())
 
     def _get_validator_and_check_schema(self, schema: Any) -> Type[Validator]:
         # get the meta schema
@@ -133,7 +169,7 @@ class SchemaRegistry:
         return validator_cls(schema)
 
     @lru_cache(maxsize=CACHE_SIZE)
-    def get_iglu_schema_validator(self, schema: str) -> Optional[Validator]:
+    def get_iglu_schema_validator(self, schema: str) -> Validator:
         iglu_schema = self.parse_iglu_schema(schema)
         try:
             s = self._load_iglu_schema(iglu_schema)
@@ -141,8 +177,7 @@ class SchemaRegistry:
             return self._get_validator_and_check_schema(s)
         except SchemaError as e:
             print(f"Failed to load schema: {schema}")
-            print(e)
-            return None
+            raise
         except SchemaNotFound:
             print(f"Schema not found: {schema}")
-            return None
+            raise

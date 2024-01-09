@@ -12,11 +12,7 @@ class TemporaryAtomicEvent():
                  initial_data: Optional[Dict] = None) -> None:
         self.raw_event = raw_event
         self.temp_data = initial_data or {}
-        # map all fields from initial data that are field of atomic event
         self.atomic = {}
-        # for k, v in self.temp_data.items():
-        #     if k in self.MODEL_FIELDS:
-        #         self.atomic[k] = v
 
     def __setitem__(self, key: str, value: Any) -> None:
         self.temp_data[key] = value
@@ -43,13 +39,10 @@ class TemporaryAtomicEvent():
 
     def add_context(self, context: SelfDescribingContext) -> None:
         if "contexts" not in self.atomic:
-            self.atomic["contexts"] = []
-        else:
-            # check if we already have this context
-            for c in self.atomic["contexts"]:
-                if c.schema_name == context.schema_name:
-                    raise ValueError(f"Context {context.schema_name} already exists")
-        self.atomic["contexts"].append(context)
+            self.atomic["contexts"] = {}
+        if context.schema_name in self.atomic["contexts"]:
+            raise ValueError(f"Context {context.schema_name} already exists")
+        self.atomic["contexts"][context.schema_name] = context
 
     def has_context(self, schema_name: str) -> bool:
         if "contexts" not in self.atomic:
@@ -68,13 +61,19 @@ class TemporaryAtomicEvent():
         return "event" in self.atomic and self.atomic["event"] is not None
 
     def to_atomic_event(self) -> "AtomicEvent":
+        # for k, v in self.temp_data.items():
+        #     if k in self.MODEL_FIELDS:
+        #         self.atomic[k] = v
         return AtomicEvent(**self.atomic)
 
     def get_event(self) -> Optional[SelfDescribingEvent]:
         return self.atomic.get("event")
     
     def get_contexts(self) -> List[SelfDescribingContext]:
-        return self.atomic.get("contexts", [])
+        context_dict: Dict[str, SelfDescribingContext] = self.atomic.get("contexts")
+        if not context_dict:
+            return list()
+        return list(context_dict.values())
 
 
 class BaseEnrichment(ABC):

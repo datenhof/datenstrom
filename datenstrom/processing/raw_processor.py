@@ -1,11 +1,10 @@
 import orjson
-import base64
 
 from typing import List, Optional, Dict, Any, Callable
 from urllib.parse import parse_qs
 
 from datenstrom.common.schema.raw import CollectorPayload
-from datenstrom.common.schema.atomic import AtomicEvent, SelfDescribingContext, SelfDescribingEvent
+from datenstrom.common.schema.atomic import AtomicEvent
 from datenstrom.common.registry import SchemaRegistry
 from datenstrom.processing.enrichments.transformer import TransformEnrichment, transform_tstamp
 from datenstrom.processing.enrichments.base import TemporaryAtomicEvent, BaseEnrichment
@@ -60,7 +59,7 @@ class ProcessingInfoEnrichment(BaseEnrichment):
 
 class RawProcessor():
     def __init__(self, config: Optional[Any] = None) -> None:
-        self.registry = SchemaRegistry()
+        self.registry = SchemaRegistry(config=config)
         self.enrichments = []
         self.config = config or {}
         self.setup_enrichments(self.config)
@@ -163,15 +162,11 @@ class RawProcessor():
             for enrichment in self.enrichments:
                 enrichment.enrich(te)
 
-            # check the event and the contexts against the schema
-            se = te.get_event()
-            # we need to have an event at this point
-            if not se:
-                raise ValueError("Missing event data")
-            self.registry.validate(schema=se.schema_name, data=se.data)
-
-            for c in te.get_contexts():
-                self.registry.validate(schema=c.schema_name, data=c.data)
+            # at this point we should have a valid atomic event
+            # get the inner event
+            # se = te.get_event()
+            # if not se:
+            #     raise ValueError("Missing event data")
 
             atomic_events.append(te.to_atomic_event())
         return atomic_events

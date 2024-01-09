@@ -15,12 +15,22 @@ class BaseConfig(BaseSettings):
     model_config = SettingsConfigDict(env_file_encoding='utf-8')
 
     base_dir: str = _base_dir
+    asset_dir: str = os.path.join(_base_dir, "assets")
     max_bytes: int = 190000  # 190 kB < 256 kb after base64 for SQS
 
     vendors: List[str] = [
         "com.ruzd"
     ]
     enable_redirect_tracking: bool = False
+
+    iglu_schema_registries: List[str] = [
+        "http://iglucentral.com/schemas/",
+    ]
+
+    geoip_enabled: bool = False
+    download_geoip_db: bool = False
+    geoip_db_url: str = "https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-City.mmdb"
+    geoip_db_file: str = "GeoLite2-City.mmdb"
 
     record_format: Literal["thrift", "avro"]
     sink: Literal["dev", "kafka", "sqs"]

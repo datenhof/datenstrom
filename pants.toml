@@ -19,7 +19,7 @@ build_ignore = [
 
 [source]
 root_patterns = [
-  '/datenstrom',
+  '/',
 ]
 
 [python]

@@ -48,13 +48,13 @@ class EventExtractionEnrichment(BaseEnrichment):
                 raise ValueError("Missing schema in self describing event")
             if "data" not in self_describing_event:
                 raise ValueError("Missing data in self describing event")
-            
+
             # at this point we should have the schema of an unstructured event
             # the real event is nested inside the data field
             # we could validate the unstructred schema here
             # self.registry.validate(schema=self_describing_event["schema"],
             #                        data=self_describing_event["data"])
-            
+
             inner_event = self_describing_event["data"]
             # check if we have a schema and data
             if "schema" not in inner_event:
@@ -73,11 +73,11 @@ class EventExtractionEnrichment(BaseEnrichment):
 
         schema = event["schema"]
         # parse the schema
-        iglu_schema = self.registry.parse_iglu_schema(schema)
-        event.set_value("event_vendor", iglu_schema.vendor)
-        event.set_value("event_name", iglu_schema.name)
-        event.set_value("event_format", iglu_schema.format)
-        event.set_value("event_version", iglu_schema.version)
+        schema_parts = self.registry.get_schema_parts(schema)
+        event.set_value("event_vendor", schema_parts.vendor)
+        event.set_value("event_name", schema_parts.name)
+        event.set_value("event_format", schema_parts.format)
+        event.set_value("event_version", schema_parts.version)
 
         # TODO custom logic for
         if event["event_name"] == "page_view":
@@ -156,3 +156,11 @@ class ContextExtractionEnrichment(BaseEnrichment):
             # validate the context
             self.registry.validate(schema=schema, data=data)
             event.add_context(SelfDescribingContext(schema=schema, data=data))
+
+            # Flatten session context
+            schema_parts = self.registry.get_schema_parts(schema)
+            if schema_parts.name == "client_session":
+                if "sessionId" in data:
+                    event.set_value("session_id", data["sessionId"])
+                if "sessionIndex" in data:
+                    event.set_value("session_idx", data["sessionIndex"])

@@ -7,9 +7,12 @@ from typing import Any
 from datenstrom.processing.enrichments.base import BaseEnrichment, TemporaryAtomicEvent
 
 
-# get directory of this file
-dir_path = os.path.dirname(os.path.realpath(__file__))
-geoip_file = os.path.join(dir_path, "GeoLite2-City.mmdb")
+# # get directory of this file
+# file_path = os.path.dirname(os.path.realpath(__file__))
+# # get directory of the project (2 parents up)
+# dir_path = os.path.abspath(os.path.join(file_path, "..", ".."))
+# assets_path = os.path.join(dir_path, "assets")
+# geoip_file = os.path.join(assets_path, "GeoLite2-City.mmdb")
 
 
 def download_file(url: str, local_file: str):
@@ -30,13 +33,19 @@ def download_file(url: str, local_file: str):
 class GeoIPEnrichment(BaseEnrichment):
     def __init__(self, config: Any) -> None:
         super().__init__(config=config)
+        self.assets_path = self.config.asset_dir
         self.geoip_db_url = self.config.get("geoip_db_url")
+        self.enable_download = self.config.get("download_geoip_db", False)
+        self.geo_db_file_name = self.config.get("geoip_db_file", "GeoLite2-City.mmdb")
+        self.geo_db_file = os.path.join(self.assets_path, self.geo_db_file_name)
         self.read_db()
 
     def read_db(self):
-        if not os.path.exists(geoip_file):
-            download_file(self.geoip_db_url, geoip_file)
-        self.reader = geoip2.database.Reader(geoip_file)
+        if not os.path.exists(self.geo_db_file):
+            if not self.enable_download or not self.geoip_db_url:
+                raise ValueError(f"GeoIP database not found at {self.geo_db_file} and download is disabled")
+            download_file(self.geoip_db_url, self.geo_db_file)
+        self.reader = geoip2.database.Reader(self.geo_db_file)
 
     def lookup_ip(self, ip: str):
         return self.reader.city(ip)

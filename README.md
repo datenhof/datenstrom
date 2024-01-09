@@ -31,5 +31,24 @@ Snowplow Thrift File: [Github](https://github.com/snowplow/iglu-central/blob/mas
 ### Running Locally
 
 ```
+# API:
 uvicorn datenstrom.collector.main:app --reload
+# Enrichment
+python datenstrom/enrich/app.py
+```
+
+### Building Docker Image
+
+```
+pants package datenstrom/collector:datenstrom-collector
+pants publish datenstrom/collector:datenstrom-collector
+```
+
+## Enrich
+
+
+### Building Docker Image
+
+```
+pants package datenstrom/processing:datenstrom-enricher
 ```

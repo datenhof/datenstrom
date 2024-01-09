@@ -1,4 +1,4 @@
-from typing import Optional, Any, List
+from typing import Optional, Any, Dict
 from datetime import datetime
 from pydantic import BaseModel, Field
 
@@ -69,5 +69,5 @@ class AtomicEvent(BaseModel):
     value: Optional[str] = None
 
     # Data
-    contexts: List[SelfDescribingContext] = Field(default_factory=list)
+    contexts: Dict[str, SelfDescribingContext] = Field(default_factory=dict)
     event: SelfDescribingEvent

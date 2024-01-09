@@ -1,10 +1,12 @@
+import time
+
 from typing import List
 
-from datenstrom.collector.settings import config
 from datenstrom.processing.raw_processor import RawProcessor
 from datenstrom.common.schema.raw import CollectorPayload
 from datenstrom.connectors.sources.sqs import SQSSource
 from datenstrom.connectors.sinks.sqs import SQSSink
+from datenstrom.common.registry import SchemaNotFound, SchemaError
 from signal import signal, SIGINT, SIGTERM
 
 
@@ -28,7 +30,7 @@ class Enricher:
         self.sink = SQSSink(config=config, queue_type="events")
         # self.error_sink = SQSSink(config=config, queue_type="errors")
 
-    def enrich(self, message: bytes) -> List[bytes]:
+    def _process(self, message: bytes) -> List[bytes]:
         if config.record_format == "avro":
             payload = CollectorPayload.from_avro(message)
         elif config.record_format == "thrift":
@@ -42,21 +44,33 @@ class Enricher:
             output_messages.append(json_string.encode("utf-8"))
         return output_messages
 
+    def process_message(self, message: bytes) -> List[bytes]:
+        try:
+            return self._process(message)
+        except SchemaNotFound as e:
+            print(f"schema not found: {e}")
+            # self.error_sink.write([message])
+            return []
+        except SchemaError as e:
+            print(f"schema error: {e}")
+            # self.error_sink.write([message])
+            return []
+        except ValueError as e:
+            print(f"invalid message: {e}")
+            # self.error_sink.write([message])
+            return []
+
     def run(self):
         signal_handler = SignalHandler()
         while not signal_handler.received_signal:
             messages = self.source.read()
+            t0 = time.time()
+            counter = 0
             for message in messages:
-                try:
-                    enriched_messages = self.enrich(message.data())
-                except Exception as e:
-                    print(f"exception while processing message: {repr(e)}")
-                    continue
+                enriched_messages = self.process_message(message.data())
                 self.sink.write(enriched_messages)
-                print(f"processed {len(enriched_messages)} messages")
+                counter += len(enriched_messages)
                 message.ack()
-
-
-if __name__ == "__main__":
-    enricher = Enricher(config=config)
-    enricher.run()
+            t = (time.time() - t0) * 1000.0
+            if counter > 0:
+                print(f"processed {counter} messages in {t:.2f} milliseconds")

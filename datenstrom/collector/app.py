@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request, Response
 
-from datenstrom.collector.settings import config
+from datenstrom.settings import config
 
 
 async def cors_preflight(request: Request, call_next):
