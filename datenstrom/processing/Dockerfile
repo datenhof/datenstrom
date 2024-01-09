@@ -1,11 +1,12 @@
 FROM python:3.11-slim
 
 WORKDIR /app
+ENV PYTHONUNBUFFERED=1
 ENV PATH=/venv/bin:$PATH
 ENV ASSET_DIR=/app/assets
 
-RUN apt-get -y update; apt-get -y install curl
-RUN mkdir assets && cd assets && curl -L https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-City.mmdb -o GeoLite2-City.mmdb
+RUN apt-get -y update; apt-get -y install wget
+RUN mkdir assets && cd assets && wget https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-City.mmdb
 
 COPY datenstrom.processing/enricher_bin.pex /app/enricher_bin.pex
 

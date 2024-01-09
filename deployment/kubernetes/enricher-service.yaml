@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: enricher-deployment
+  namespace: datenstrom
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:                    # Match with template
+      app: enricher
+
+  # Pod template (contains same fields as a normal Pod)
+  template:
+    metadata:
+      namespace: datenstrom
+      labels:                       # Match with selector
+        app: enricher
+    spec:
+      serviceAccountName: collector-service-role
+      restartPolicy: Always
+      containers:
+      - name: enricher-container
+        image: mths/datenstrom-enricher:latest
+        imagePullPolicy: Always
+        env:
+        - name: RECORD_FORMAT
+          value: "avro"
+        - name: SINK
+          value: "sqs"
+        - name: SQS_QUEUE_RAW
+          value: "datenstrom_raw"
+        - name: SQS_QUEUE_EVENTS
+          value: "datenstrom_events"
+        - name: SQS_QUEUE_ERRORS
+          value: "datenstrom_errors"
+        - name: SECRET_KEY
+          value: "somethingsomethingdarkside"
+        - name: IGLU_SCHEMA_REGISTRIES
+          value: "[\"http://iglucentral.com/schemas/\", \"http://ruzd-schemas.s3-website.eu-central-1.amazonaws.com/schemas/\"]"
+        - name: GEOIP_ENABLED
+          value: "true"

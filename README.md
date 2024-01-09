@@ -51,4 +51,5 @@ pants publish datenstrom/collector:datenstrom-collector
 
 ```
 pants package datenstrom/processing:datenstrom-enricher
+pants publish datenstrom/processing:datenstrom-enricher
 ```

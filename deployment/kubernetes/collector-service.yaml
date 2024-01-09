@@ -1,0 +1,86 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: collector-ingress
+  namespace: datenstrom
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: tracker.datenstrom.io
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: collector-service
+            port:
+              number: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: collector-service
+  namespace: datenstrom
+spec:
+  ports:
+  - port: 8000
+    targetPort: 8000
+  selector:
+    app: collector
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: collector-deployment
+  namespace: datenstrom
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:                    # Match with template
+      app: collector
+
+  # Pod template (contains same fields as a normal Pod)
+  template:
+    metadata:
+      namespace: datenstrom
+      labels:                       # Match with selector
+        app: collector
+    spec:
+      serviceAccountName: collector-service-role
+      restartPolicy: Always
+      containers:
+      - name: collector-container
+        image: mths/datenstrom-collector:latest
+        imagePullPolicy: Always
+        env:
+        - name: RECORD_FORMAT
+          value: "avro"
+        - name: SINK
+          value: "sqs"
+        - name: SQS_QUEUE_RAW
+          value: "datenstrom_raw"
+        - name: SQS_QUEUE_EVENTS
+          value: "datenstrom_events"
+        - name: SQS_QUEUE_ERRORS
+          value: "datenstrom_errors"
+        - name: SECRET_KEY
+          value: "somethingsomethingdarkside"
+        - name: IGLU_SCHEMA_REGISTRIES
+          value: "[\"http://iglucentral.com/schemas/\"]"
+        - name: GEOIP_ENABLED
+          value: "true"
+        ports:
+          - containerPort: 8000
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1

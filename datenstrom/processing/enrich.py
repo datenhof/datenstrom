@@ -31,12 +31,12 @@ class Enricher:
         # self.error_sink = SQSSink(config=config, queue_type="errors")
 
     def _process(self, message: bytes) -> List[bytes]:
-        if config.record_format == "avro":
+        if self.config.record_format == "avro":
             payload = CollectorPayload.from_avro(message)
-        elif config.record_format == "thrift":
+        elif self.config.record_format == "thrift":
             payload = CollectorPayload.from_thrift(message)
         else:
-            raise ValueError(f"Unknown record format: {config.record_format}")
+            raise ValueError(f"Unknown record format: {self.config.record_format}")
         atomic_events = self.raw_processor.process_raw_event(payload)
         output_messages = []
         for a in atomic_events:
