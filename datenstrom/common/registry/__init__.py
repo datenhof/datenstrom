@@ -7,6 +7,7 @@ from jsonschema.exceptions import SchemaError, ValidationError
 import orjson
 import requests
 
+from datenstrom.common.schema.atomic import ATOMIC_EVENT_SCHEMA
 from datenstrom.common.schema.events import STATIC_JSON_SCHEMAS
 
 
@@ -139,10 +140,18 @@ class SchemaRegistry:
         if path in STATIC_JSON_SCHEMAS:
             print(f"Hit static builtin schema: {path}")
             return JsonSchema(STATIC_JSON_SCHEMAS[path])
-        
+        # check if it is the atomic event schema
+        if path == "io.datenstrom/atomic/jsonschema/1-0-0":
+            print(f"Hit static builtin schema: {path}")
+            return JsonSchema(ATOMIC_EVENT_SCHEMA)
+
         # check if we can get it from a registered repository
-        return self._load_iglu_from_repository(iglu_schema)
-    
+        iglu_schema = self._load_iglu_from_repository(iglu_schema)
+        if iglu_schema:
+            return iglu_schema
+
+        raise SchemaNotFound(f"Schema not found: {iglu_schema}")
+
     def _load_iglu_from_repository(self, iglu_schema: IgluSchema) -> JsonSchema:
         # TODO: Implement better retry logic
         for registry in self.iglu_registries:
@@ -170,6 +179,7 @@ class SchemaRegistry:
 
     @lru_cache(maxsize=CACHE_SIZE)
     def get_iglu_schema_validator(self, schema: str) -> Validator:
+        # TODO: Cache Exceptions
         iglu_schema = self.parse_iglu_schema(schema)
         try:
             s = self._load_iglu_schema(iglu_schema)

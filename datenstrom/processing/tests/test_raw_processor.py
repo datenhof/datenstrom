@@ -4,6 +4,10 @@ import base64
 
 from datenstrom.processing.raw_processor import RawProcessor
 from datenstrom.common.schema.raw import from_avro
+from datenstrom.settings import get_test_settings
+
+
+test_config = get_test_settings()
 
 
 def load_data():
@@ -21,7 +25,7 @@ def load_data():
 def test_raw_get():
     d = load_data()
     raw_event = d["webevent_get"]
-    p = RawProcessor()
+    p = RawProcessor(test_config)
     out = p.process_raw_event(raw_event)
     assert len(out) == 1
     get_event = out[0].model_dump()
@@ -29,7 +33,8 @@ def test_raw_get():
     assert get_event["platform"] == 'web'
     assert get_event["event_name"] == 'page_view'
     assert len(get_event["contexts"]) == 1
-    assert get_event["contexts"][0]["schema_name"] == 'iglu:com.snowplowanalytics.snowplow/web_page/jsonschema/1-0-0'
+    context = get_event["contexts"][next(iter(get_event["contexts"]))]
+    assert context["schema_name"] == 'iglu:com.snowplowanalytics.snowplow/web_page/jsonschema/1-0-0'
     assert get_event["event"]["schema_name"] == 'iglu:io.datenstrom/page_view/jsonschema/1-0-0'
     assert get_event["event"]["data"]["page_url"] == 'http://127.0.0.1:8000/?test=ok&hello=world'
 
@@ -37,7 +42,7 @@ def test_raw_get():
 def test_raw_event1():
     d = load_data()
     raw_event = d["event1"]
-    p = RawProcessor()
+    p = RawProcessor(test_config)
     out = p.process_raw_event(raw_event)
     assert len(out) == 2
 
@@ -61,7 +66,7 @@ def test_raw_event1():
 def test_raw_post():
     d = load_data()
     raw_event = d["webevent"]
-    p = RawProcessor()
+    p = RawProcessor(test_config)
     out = p.process_raw_event(raw_event)
     assert len(out) == 1
     post_event = out[0].model_dump()
@@ -69,7 +74,8 @@ def test_raw_post():
     assert post_event["platform"] == 'web'
     assert post_event["event_name"] == 'page_view'
     assert len(post_event["contexts"]) == 1
-    assert post_event["contexts"][0]["schema_name"] == 'iglu:com.snowplowanalytics.snowplow/web_page/jsonschema/1-0-0'
+    context = post_event["contexts"][next(iter(post_event["contexts"]))]
+    assert context["schema_name"] == 'iglu:com.snowplowanalytics.snowplow/web_page/jsonschema/1-0-0'
     assert post_event["event"]["schema_name"] == 'iglu:io.datenstrom/page_view/jsonschema/1-0-0'
     assert post_event["event"]["data"]["page_url"] == 'http://127.0.0.1:8000/?test=ok&hello=world'
 
@@ -77,7 +83,7 @@ def test_raw_post():
 def test_raw_iglu():
     d = load_data()
     raw_event = d["iglu_event"]
-    p = RawProcessor()
+    p = RawProcessor(test_config)
     out = p.process_raw_event(raw_event)
     assert len(out) == 1
     iglu_event = out[0].model_dump()

@@ -1,6 +1,7 @@
 import json
 
 from datenstrom.common.registry import SchemaRegistry
+from datenstrom.common.schema.atomic import AtomicEvent, SelfDescribingContext, SelfDescribingEvent
 
 
 iglu_base_schema = "iglu:com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0"
@@ -16,6 +17,40 @@ class DummyConfig:
 
 def test_jsonschema():
     r = SchemaRegistry(DummyConfig())
-    assert r.get_validator_cls(iglu_base_schema_data["$schema"])
-    res = r.is_valid(iglu_base_schema, iglu_base_schema_data)
+    res = r._get_validator_and_check_schema(iglu_base_schema_data)
     assert res
+
+
+def test_atomic_schema():
+    r = SchemaRegistry(DummyConfig())
+
+    ae = AtomicEvent(
+        event_id="123",
+        collector_host="localhost",
+        platform="test",
+        event_vendor="io.datenstrom",
+        event_name="atomic",
+        event_format="jsonschema",
+        event_version="1-0-0",
+        tstamp="2021-01-01T00:00:00.000Z",
+        collector_tstamp="2021-01-01T00:00:00.000Z",
+        etl_tstamp="2021-01-01T00:00:00.000Z",
+        v_collector="test",
+        v_etl="test",
+        event=SelfDescribingEvent(
+            schema="iglu:io.datenstrom/page_view/jsonschema/1-0-0",
+            data={
+                "test": "test",
+            }
+        ),
+        contexts={
+            "iglu:io.datenstrom/context/jsonschema/1-0-0":
+            SelfDescribingContext(
+                schema="iglu:io.datenstrom/context/jsonschema/1-0-0",
+                data={
+                    "test": "test",
+                }
+            )
+        }
+    )
+    res = r.validate("iglu:io.datenstrom/atomic/jsonschema/1-0-0", ae.model_dump(mode="json", by_alias=True))
