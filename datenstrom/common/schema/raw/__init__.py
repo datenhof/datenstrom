@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Dict
 from io import BytesIO
 import orjson
 import logging
@@ -135,6 +135,18 @@ class CollectorPayload(BaseModel):
 
     def to_avro(self):
         return to_avro(self)
+
+    def get_headers_dict(self) -> Dict[str, str]:
+        if self.headers is None:
+            return {}
+        result = {}
+        for h in self.headers:
+            try:
+                k, v = h.split(":", 1)
+                result[k.strip()] = v.strip()
+            except ValueError:
+                pass
+        return result
 
     @classmethod
     def from_thrift(cls, b: bytes):

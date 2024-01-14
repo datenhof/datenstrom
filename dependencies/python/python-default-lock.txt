@@ -19,6 +19,8 @@
 //     "orjson<4.0.0,>=3.9.10",
 //     "pydantic-settings<3.0.0,>=2.1.0",
 //     "pydantic<3.0.0,>=2.5.3",
+//     "pyjwt<3.0.0,>=2.8.0",
+//     "requests<3.0.0,>=2.31.0",
 //     "thriftpy2<0.5.0,>=0.4.17",
 //     "uvicorn[standard]<0.26.0,>=0.25.0",
 //     "uvicorn[standard]<1.0,>=0.25.0"
@@ -250,36 +252,36 @@
           "artifacts": [
             {
               "algorithm": "sha256",
-              "hash": "1f94042f4efb5133b6b9b8b3243afc01143a81d21b3197a3afadf5780f97b05d",
-              "url": "https://files.pythonhosted.org/packages/97/fb/830030e00ee983ab21e81865d3518cd02555ba4effaf584a5b2ecf02d39a/boto3-1.34.14-py3-none-any.whl"
+              "hash": "23d2ad6111ab8b734b11f01bb158bea633b2901dcdd4f8e255154051d9138256",
+              "url": "https://files.pythonhosted.org/packages/8b/dc/26c1c654cb6a177fc0b7ca7f916cd61daf045a42ca091fce44906d65be9f/boto3-1.34.16-py3-none-any.whl"
             },
             {
               "algorithm": "sha256",
-              "hash": "5c1bb487c68120aae236354d81b8a1a55d0aa3395d30748a01825ef90891921e",
-              "url": "https://files.pythonhosted.org/packages/5f/b6/1e45c3a145304c3feaf48959c6a46efe9a256eec4d417a445b0d9827d20c/boto3-1.34.14.tar.gz"
+              "hash": "a316c87223f7f37b62af825524745ffb93f5b18580f3912acc39a1704d44ea43",
+              "url": "https://files.pythonhosted.org/packages/00/7f/a57904d439ff55617b2d0e0c5071973b971f978de341822231a087397f5b/boto3-1.34.16.tar.gz"
             }
           ],
           "project_name": "boto3",
           "requires_dists": [
-            "botocore<1.35.0,>=1.34.14",
+            "botocore<1.35.0,>=1.34.16",
             "botocore[crt]<2.0a0,>=1.21.0; extra == \"crt\"",
             "jmespath<2.0.0,>=0.7.1",
             "s3transfer<0.11.0,>=0.10.0"
           ],
           "requires_python": ">=3.8",
-          "version": "1.34.14"
+          "version": "1.34.16"
         },
         {
           "artifacts": [
             {
               "algorithm": "sha256",
-              "hash": "3b592f50f0406e236782a3a0a9ad1c3976060fdb2e04a23d18c3df5b7dfad3e0",
-              "url": "https://files.pythonhosted.org/packages/71/1c/659e22bbae6089e9b40dd9461b70b1668516710455ba3b1361dc73d81f14/botocore-1.34.14-py3-none-any.whl"
+              "hash": "e59f3340673abd31e042b494a4bca96e55d232f7d3f8222a40a6273515e25891",
+              "url": "https://files.pythonhosted.org/packages/6d/84/36a78ba9d992baf3ed48dc0ad2bdb711d27033de0b088d71f4cfcd698bde/botocore-1.34.16-py3-none-any.whl"
             },
             {
               "algorithm": "sha256",
-              "hash": "041bed0852649cab7e4dcd4d87f9d1cc084467fb846e5b60015e014761d96414",
-              "url": "https://files.pythonhosted.org/packages/35/6d/a5aaf38f980060d17905398301033e9eb45c2552bf281fa7fd4c8e23ebdd/botocore-1.34.14.tar.gz"
+              "hash": "94697602998dced2ce63321a3dbb2e3ddd477721b376cde41fcca9d3ef069037",
+              "url": "https://files.pythonhosted.org/packages/92/b4/c3c57cf4e4fcf8a93dc54e842cc6c554dc02abe2372d177409d70f899c2c/botocore-1.34.16.tar.gz"
             }
           ],
           "project_name": "botocore",
@@ -291,7 +293,7 @@
             "urllib3<2.1,>=1.25.4; python_version >= \"3.10\""
           ],
           "requires_python": ">=3.8",
-          "version": "1.34.14"
+          "version": "1.34.16"
         },
         {
           "artifacts": [
@@ -514,33 +516,33 @@
           "artifacts": [
             {
               "algorithm": "sha256",
-              "hash": "d574bc385f820da0404528157238de4e5fdd775d2cb3d05b3b0f1b475d493837",
-              "url": "https://files.pythonhosted.org/packages/41/83/63d8f7318986df5bddeeb7c1fb61a55b9313906dff8a8e1b92bf4b488595/fastavro-1.9.2-cp311-cp311-musllinux_1_1_x86_64.whl"
+              "hash": "8807046edc78f50b3ea5f55f6a534c87b2a13538e7c56fec3532ef802bcae333",
+              "url": "https://files.pythonhosted.org/packages/07/ae/2fcef7eae3f002aea5c5f6e6487e1c1b03421d337b301e4c16df7b67a586/fastavro-1.9.3-cp311-cp311-musllinux_1_1_x86_64.whl"
             },
             {
               "algorithm": "sha256",
-              "hash": "9f4a2a4bed0e829f79fa1e4f172d484b2179426e827bcc80c0069cc81328a5af",
-              "url": "https://files.pythonhosted.org/packages/05/9f/5ab83b6822d830595531130daafd59fb9bb3099c303e39cf64c715bbca43/fastavro-1.9.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+              "hash": "a5a279cda25d876e6f120950cadf184a307fd8998f9a22a90bb62e6749f88d1e",
+              "url": "https://files.pythonhosted.org/packages/11/66/99df69f74a4054e287ac7ba11caee92ae91d58276571bc726a4ec5b9a1b0/fastavro-1.9.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
             },
             {
               "algorithm": "sha256",
-              "hash": "46458f78b481c12db62d3d8a81bae09cb0b5b521c0d066c6856fc2746908d00d",
-              "url": "https://files.pythonhosted.org/packages/56/9f/101598628934b871119e960e1367601e9d3d4250dfd2137a3078d2db5ae6/fastavro-1.9.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl"
+              "hash": "63d6f928840f3fb1f2e1fe20bc8b7d0e1a51ba4bb0e554ecb837a669fba31288",
+              "url": "https://files.pythonhosted.org/packages/11/95/69659caa715e1fa45cd700a3b4be3b0b00050d4a13acf6d3dfb25cd71964/fastavro-1.9.3-cp311-cp311-musllinux_1_1_aarch64.whl"
             },
             {
               "algorithm": "sha256",
-              "hash": "5c1ffad986200496bd69b5c4748ae90b5d934d3b1456f33147bee3a0bb17f89b",
-              "url": "https://files.pythonhosted.org/packages/84/3c/e960e7e292e3e89b939bd69b2426db076d1945b8cff26a58cf40637544c1/fastavro-1.9.2.tar.gz"
+              "hash": "2a7053ed10194ec53754f5337b57b3273a74b48505edcd6edb79fe3c4cd259c0",
+              "url": "https://files.pythonhosted.org/packages/50/5a/a4ab64dd38f4098014b5e074bb7c47d6303b1e394e0b43f4af29fbddf1ef/fastavro-1.9.3-cp311-cp311-macosx_10_9_universal2.whl"
             },
             {
               "algorithm": "sha256",
-              "hash": "887c20dc527a549764c91f9e48ece071f2f26d217af66ebcaeb87bf29578fee5",
-              "url": "https://files.pythonhosted.org/packages/91/c5/4cf8e81f92bcbc44c31de9e44a12eed5cd2f92704bea0fc2122ab4a38f3c/fastavro-1.9.2-cp311-cp311-macosx_10_9_universal2.whl"
+              "hash": "a30d3d2353f6d3b4f6dcd6a97ae937b3775faddd63f5856fe11ba3b0dbb1756a",
+              "url": "https://files.pythonhosted.org/packages/b0/46/397429bb5dee5b765aff69cd53d0351b26df8b193c9aa8669044573baf27/fastavro-1.9.3.tar.gz"
             },
             {
               "algorithm": "sha256",
-              "hash": "6167f9bbe1c5a28fbc2db767f97dbbb4981065e6eeafd4e613f6fe76c576ffd4",
-              "url": "https://files.pythonhosted.org/packages/97/e6/538d166911ca36b56a3268e091d7bf78659ce018673c82623129130643f8/fastavro-1.9.2-cp311-cp311-musllinux_1_1_aarch64.whl"
+              "hash": "853e01f13534d1baa0a3d493a8573e665e93ffa35b4bf1d125e21764d343af8e",
+              "url": "https://files.pythonhosted.org/packages/b2/18/fe640a15021f88a1064023bc742cfefa673978e5bc4ed475d13018298396/fastavro-1.9.3-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl"
             }
           ],
           "project_name": "fastavro",
@@ -553,7 +555,7 @@
             "zstandard; extra == \"zstandard\""
           ],
           "requires_python": ">=3.8",
-          "version": "1.9.2"
+          "version": "1.9.3"
         },
         {
           "artifacts": [
@@ -854,33 +856,33 @@
           "artifacts": [
             {
               "algorithm": "sha256",
-              "hash": "e09b295c401c104ae0e30f66c1a3f3c2aa4ba2cbe12a787576499356a5a4d6c1",
-              "url": "https://files.pythonhosted.org/packages/ed/77/bb4c1d0a5764d1e9589d721bbce64ec66027f4ba3b2bcb1c222730e6cbc8/maxminddb-2.5.1-cp311-cp311-musllinux_1_1_x86_64.whl"
+              "hash": "1a3fab6bea6cc59444e6bad2a4fbf91228f6f51dcb29d09ed091930a475bd8cb",
+              "url": "https://files.pythonhosted.org/packages/d0/93/139145b84f9dd47054dbb5f8ddb6383d51415e862664f01b0953e077e037/maxminddb-2.5.2-cp311-cp311-musllinux_1_1_x86_64.whl"
             },
             {
               "algorithm": "sha256",
-              "hash": "b0bbbd58b300aaddf985f763720bdebba9f7a73168ff9f57168117f630ad1c06",
-              "url": "https://files.pythonhosted.org/packages/05/17/e9f85a655e09f1da391e95132ade6aa5f42470ff6d31d9d24c9237b7ecfa/maxminddb-2.5.1-cp311-cp311-macosx_10_9_x86_64.whl"
+              "hash": "b3c33e4fc7821ee6c9f40837116e16ab6175863d4a64eee024c5bec686690a87",
+              "url": "https://files.pythonhosted.org/packages/0f/07/278a738306a26f5d43ad91e12ad16d9cdef6d1179f03f29df0cbae74be8b/maxminddb-2.5.2.tar.gz"
             },
             {
               "algorithm": "sha256",
-              "hash": "2ecb1be961f1969be047d07743093f0dcf2f6d4ec3a06a4555587f380a96f6e7",
-              "url": "https://files.pythonhosted.org/packages/57/21/0e805ccec510fb1d5c3d5b18a3942c5edbab8172fb84d3ebfc13e8a588ee/maxminddb-2.5.1-cp311-cp311-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl"
+              "hash": "bca70905515fe50684974a9afaa7db4a4e9fbfdebcb0c2cde9db8e048e0d8145",
+              "url": "https://files.pythonhosted.org/packages/55/30/b5cb2c239f07bead9db60e17873fb106d7233d94609a042587c13d0805c0/maxminddb-2.5.2-cp311-cp311-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl"
             },
             {
               "algorithm": "sha256",
-              "hash": "1e091c2b44673c218ee2df23adbc0b6d04fd5c646cfcb6c6fe26fb849434812a",
-              "url": "https://files.pythonhosted.org/packages/76/f1/7928ad5d375dc8676f4e1cd0ef3a6067b593867f9f69cb0f15bdd8426e95/maxminddb-2.5.1-cp311-cp311-musllinux_1_1_i686.whl"
+              "hash": "d839c480e4b93bb37bb1cc2777d77e6b2127c006e60b56f748f10571d8b0e471",
+              "url": "https://files.pythonhosted.org/packages/68/06/7156dc03f56341728502c6c04306c2b389bcd2d2e02ee2717ff7d129ebde/maxminddb-2.5.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
             },
             {
               "algorithm": "sha256",
-              "hash": "5a6751e2e89d62d53217870bcc2a8c887dc56ae370ba1b74e52e880761916e54",
-              "url": "https://files.pythonhosted.org/packages/98/f7/5a744add31f677dd370e68c471fff01d253435fad89c3e501a9ec1c37623/maxminddb-2.5.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+              "hash": "1409a045eb04cebb297221eab1020c4f05434d02c0961410f6996ef474482998",
+              "url": "https://files.pythonhosted.org/packages/73/05/c237a7c8621c224f44d91dce75422981d3a0d4b9d43af0e258f7fa35eb7d/maxminddb-2.5.2-cp311-cp311-macosx_10_9_x86_64.whl"
             },
             {
               "algorithm": "sha256",
-              "hash": "4807d374e645bd68334e4f487ba85a27189dbc1267a98e644aa686a7927e0559",
-              "url": "https://files.pythonhosted.org/packages/a0/fe/f3a6fbd7a7146f733c1c39062fe8e6aeb3a833c07f1798c06ab8ff7b788f/maxminddb-2.5.1.tar.gz"
+              "hash": "67f97cd0c6aac39a51294b04a1e922532125285c24b18a58e2a9c92c7691fa9f",
+              "url": "https://files.pythonhosted.org/packages/9a/f3/d3e01ad14c0cda1ea6b07f94525d83376db8fa00fbddd59028bb14c830e9/maxminddb-2.5.2-cp311-cp311-musllinux_1_1_i686.whl"
             }
           ],
           "project_name": "maxminddb",
@@ -888,7 +890,7 @@
             "setuptools>=68.2.2"
           ],
           "requires_python": ">=3.8",
-          "version": "2.5.1"
+          "version": "2.5.2"
         },
         {
           "artifacts": [
@@ -1166,6 +1168,39 @@
           ],
           "requires_python": ">=3.8",
           "version": "2.1.0"
+        },
+        {
+          "artifacts": [
+            {
+              "algorithm": "sha256",
+              "hash": "59127c392cc44c2da5bb3192169a91f429924e17aff6534d70fdc02ab3e04320",
+              "url": "https://files.pythonhosted.org/packages/2b/4f/e04a8067c7c96c364cef7ef73906504e2f40d690811c021e1a1901473a19/PyJWT-2.8.0-py3-none-any.whl"
+            },
+            {
+              "algorithm": "sha256",
+              "hash": "57e28d156e3d5c10088e0c68abb90bfac3df82b40a71bd0daa20c65ccd5c23de",
+              "url": "https://files.pythonhosted.org/packages/30/72/8259b2bccfe4673330cea843ab23f86858a419d8f1493f66d413a76c7e3b/PyJWT-2.8.0.tar.gz"
+            }
+          ],
+          "project_name": "pyjwt",
+          "requires_dists": [
+            "coverage[toml]==5.0.4; extra == \"dev\"",
+            "coverage[toml]==5.0.4; extra == \"tests\"",
+            "cryptography>=3.4.0; extra == \"crypto\"",
+            "cryptography>=3.4.0; extra == \"dev\"",
+            "pre-commit; extra == \"dev\"",
+            "pytest<7.0.0,>=6.0.0; extra == \"dev\"",
+            "pytest<7.0.0,>=6.0.0; extra == \"tests\"",
+            "sphinx-rtd-theme; extra == \"dev\"",
+            "sphinx-rtd-theme; extra == \"docs\"",
+            "sphinx<5.0.0,>=4.5.0; extra == \"dev\"",
+            "sphinx<5.0.0,>=4.5.0; extra == \"docs\"",
+            "typing-extensions; python_version <= \"3.7\"",
+            "zope.interface; extra == \"dev\"",
+            "zope.interface; extra == \"docs\""
+          ],
+          "requires_python": ">=3.7",
+          "version": "2.8.0"
         },
         {
           "artifacts": [
@@ -1903,6 +1938,8 @@
     "orjson<4.0.0,>=3.9.10",
     "pydantic-settings<3.0.0,>=2.1.0",
     "pydantic<3.0.0,>=2.5.3",
+    "pyjwt<3.0.0,>=2.8.0",
+    "requests<3.0.0,>=2.31.0",
     "thriftpy2<0.5.0,>=0.4.17",
     "uvicorn[standard]<0.26.0,>=0.25.0",
     "uvicorn[standard]<1.0,>=0.25.0"

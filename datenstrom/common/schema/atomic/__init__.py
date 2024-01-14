@@ -19,7 +19,8 @@ class AtomicEvent(BaseModel):
     # Application Fields
     collector_host: str
     tenant: Optional[str] = None
-    identifier: Optional[str] = None
+    collector_auth: Optional[str] = None
+    app_id: Optional[str] = None
     platform: str
 
     # metadata

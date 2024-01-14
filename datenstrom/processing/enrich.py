@@ -40,7 +40,7 @@ class Enricher:
         atomic_events = self.raw_processor.process_raw_event(payload)
         output_messages = []
         for a in atomic_events:
-            json_string = a.model_dump_json()
+            json_string = a.model_dump_json(by_alias=True)
             output_messages.append(json_string.encode("utf-8"))
         return output_messages
 

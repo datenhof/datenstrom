@@ -53,3 +53,13 @@ pants publish datenstrom/collector:datenstrom-collector
 pants package datenstrom/processing:datenstrom-enricher
 pants publish datenstrom/processing:datenstrom-enricher
 ```
+
+## Pants Build System
+
+### Adding dependencies
+
+Dependencies are added to `dependecies/pyproject.toml` with poetry. After adding a dependency you can run pants to update the lockfiles:
+
+```
+pants generate-lockfiles
+```

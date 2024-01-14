@@ -67,7 +67,7 @@ TRANSFORMATIONS = {
     "eid": (transform_string, "event_id"),
 
     # Application Fields
-    "aid": (transform_string, "identifier"),
+    "aid": (transform_string, "app_id"),
     "p": (transform_string, "platform"),
 
     # Date and Time Fields

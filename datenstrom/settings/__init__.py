@@ -1,11 +1,11 @@
 import os
 
 from pathlib import Path
-from typing import Optional, List,  Tuple, Type, Literal
+from typing import Optional, List,  Tuple, Type, Literal, Dict
 from pydantic_settings import BaseSettings, SettingsConfigDict, PydanticBaseSettingsSource
 from functools import lru_cache
 
-from datenstrom.common.settings import JsonConfigSettingsSource
+from datenstrom.settings.utils import JsonConfigSettingsSource
 
 _config_dir = os.path.dirname(os.path.realpath(__file__))
 _base_dir = os.path.abspath(os.path.join(_config_dir, ".."))
@@ -52,6 +52,11 @@ class BaseConfig(BaseSettings):
     cookie_domains: Optional[List[str]] = None
     cookie_fallback_domain: Optional[str] = None
 
+    authentication_public_key: Optional[str] = None
+    authentication_sub_field: str = "sub"
+    authentication_aud: Optional[str] = None
+    authentication_iss_jwk_urls: Optional[Dict[str, str]] = None
+
     @classmethod
     def settings_customise_sources(
         cls,
@@ -80,3 +85,11 @@ def get_settings():
 
 
 config = get_settings()
+
+
+def get_test_settings():
+    config_cls = BaseConfig
+    return config_cls(
+        sink="dev",
+        record_format="avro"
+    )
