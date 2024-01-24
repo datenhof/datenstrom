@@ -22,7 +22,20 @@ class KafkaSink(Sink):
         if not config.kafka_brokers:
             raise ValueError("Missing Kafka brokers")
         self.bootstrap_servers = config.kafka_brokers
-        self.topic = config.kafka_topic
+
+        if queue_type == "raw":
+            if not config.kafka_topic_raw:
+                raise ValueError("Missing kafka_topic_raw config")
+            self.topic= config.kafka_topic_raw
+        elif queue_type == "events":
+            if not config.kafka_topic_events:
+                raise ValueError("Missing kafka_topic_events config")
+            self.topic = config.kafka_topic_events
+        elif queue_type == "errors":
+            if not config.kafka_topic_errors:
+                raise ValueError("Missing kafka_topic_errors config")
+            self.topic = config.kafka_topic_errors
+
         self.counter = dict(ok=0, err=0, last_reset=datetime.now(timezone.utc))
         self._cancelled = False
         self._producer = Producer({

@@ -15,6 +15,7 @@ pants_ignore = [
 ]
 build_ignore = [
   "examples/*",
+  "deployment/*",
 ]
 
 [source]
@@ -27,12 +28,12 @@ interpreter_constraints = ["CPython==3.11.*"]
 enable_resolves = true
 
 [python.resolves]
-python-default = "dependencies/python/python-default-lock.txt"
-pytest = "dependencies/python/pytest-lock.txt"
+python-default = "dependencies/python-default-lock.txt"
+pytest = "dependencies/pytest-lock.txt"
 
 [pytest]
 install_from_resolve = "pytest"
-requirements =["//dependencies/python:pytest"]
+requirements =["//dependencies:pytest"]
 
 [python-infer]
 use_rust_parser = true

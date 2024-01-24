@@ -58,7 +58,7 @@ pants publish datenstrom/processing:datenstrom-enricher
 
 ### Adding dependencies
 
-Dependencies are added to `dependecies/pyproject.toml` with poetry. After adding a dependency you can run pants to update the lockfiles:
+Dependencies are added to `dependencies/pyproject.toml` with poetry. After adding a dependency you can run pants to update the lockfiles:
 
 ```
 pants generate-lockfiles

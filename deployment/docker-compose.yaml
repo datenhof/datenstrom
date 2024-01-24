@@ -1,0 +1,27 @@
+# docker-compose.yml
+version: "3.7"
+services:
+  collector:
+    image: datenstrom-collector
+    ports: 8000:8000
+    environment:
+      - RECORD_FORMAT=avro
+      - SINK=sqs
+      - SQS_QUEUE_RAW=datenstrom_raw
+      - SQS_QUEUE_EVENTS=datenstrom_events
+      - SQS_QUEUE_ERRORS=datenstrom_errors
+      - SECRET_KEY=somethingsomethingdarkside
+      - 'IGLU_SCHEMA_REGISTRIES=["http://iglucentral.com/schemas/"]'
+      - GEOIP_ENABLED=true
+
+  enricher:
+    image: datenstrom-enricher
+    environment:
+      - RECORD_FORMAT=avro
+      - SINK=sqs
+      - SQS_QUEUE_RAW=datenstrom_raw
+      - SQS_QUEUE_EVENTS=datenstrom_events
+      - SQS_QUEUE_ERRORS=datenstrom_errors
+      - SECRET_KEY=somethingsomethingdarkside
+      - 'IGLU_SCHEMA_REGISTRIES=["http://iglucentral.com/schemas/"]'
+      - GEOIP_ENABLED=true

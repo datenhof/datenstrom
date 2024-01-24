@@ -34,12 +34,15 @@ class BaseConfig(BaseSettings):
 
     record_format: Literal["thrift", "avro"]
     sink: Literal["dev", "kafka", "sqs"]
+    event_sink: Optional[Literal["dev", "kafka", "sqs", "firehose"]] = None
 
     sqs_queue_raw: Optional[str] = None
     sqs_queue_events: Optional[str] = None
     sqs_queue_errors: Optional[str] = None
 
-    kafka_topic: str = "datenstrom_raw"
+    kafka_topic_raw: Optional[str] = None
+    kafka_topic_events: Optional[str] = None
+    kafka_topic_errors: Optional[str] = None
     kafka_brokers: Optional[str] = None
 
     cookie_enabled: bool = True
@@ -82,9 +85,6 @@ class BaseConfig(BaseSettings):
 def get_settings():
     config_cls = BaseConfig
     return config_cls()
-
-
-config = get_settings()
 
 
 def get_test_settings():

@@ -25,7 +25,6 @@ class SQSSink(Sink):
         """Initialize."""
         super().__init__(config, queue_type=queue_type)
 
-        queue_name = None
         if queue_type == "raw":
             if not config.sqs_queue_raw:
                 raise ValueError("Missing sqs_queue_url_raw config")

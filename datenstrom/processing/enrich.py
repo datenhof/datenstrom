@@ -4,8 +4,7 @@ from typing import List
 
 from datenstrom.processing.raw_processor import RawProcessor
 from datenstrom.common.schema.raw import CollectorPayload
-from datenstrom.connectors.sources.sqs import SQSSource
-from datenstrom.connectors.sinks.sqs import SQSSink
+
 from datenstrom.common.registry import SchemaNotFound, SchemaError
 from signal import signal, SIGINT, SIGTERM
 
@@ -24,10 +23,38 @@ class SignalHandler:
 class Enricher:
     def __init__(self, config):
         self.config = config
-        assert config.sink == "sqs"
+
+        # Setting up source
+        if config.sink == "sqs":
+            from datenstrom.connectors.sources.sqs import SQSSource
+            self.source = SQSSource(config=config, queue_type="raw")
+        elif config.sink == "kafka":
+            from datenstrom.connectors.sources.kafka import KafkaSource
+            self.source = KafkaSource(config=config, queue_type="raw")
+        else:
+            raise ValueError(f"Cannot use source {config.sink} as enricher source.")
+
+        # Setting up sink
+        if not config.event_sink:
+            sink = config.sink
+        else:
+            sink = config.event_sink
+
+        if sink == "sqs":
+            from datenstrom.connectors.sinks.sqs import SQSSink
+            self.sink = SQSSink(config=config, queue_type="events")
+        elif sink == "kafka":
+            from datenstrom.connectors.sinks.kafka import KafkaSink
+            self.sink = KafkaSink(config=config, queue_type="events")
+        elif sink == "dev":
+            from datenstrom.connectors.sinks.dev import DevSink
+            self.sink = DevSink(config=config, queue_type="events")
+        else:
+            raise ValueError(f"Cannot use sink {sink} as enricher sink.")
+
         self.raw_processor = RawProcessor(config=config)
-        self.source = SQSSource(config=config, queue_type="raw")
-        self.sink = SQSSink(config=config, queue_type="events")
+        # self.source = SQSSource(config=config, queue_type="raw")
+        # self.sink = SQSSink(config=config, queue_type="events")
         # self.error_sink = SQSSink(config=config, queue_type="errors")
 
     def _process(self, message: bytes) -> List[bytes]:

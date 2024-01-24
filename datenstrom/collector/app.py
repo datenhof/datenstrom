@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request, Response
 
-from datenstrom.settings import config
+from datenstrom.settings import get_settings
 
 
 async def cors_preflight(request: Request, call_next):
@@ -23,19 +23,19 @@ async def cors_preflight(request: Request, call_next):
 def create_app() -> FastAPI:
     app = FastAPI()
 
+    config = get_settings()
     app.config = config
 
     app.middleware("http")(cors_preflight)
 
-    from datenstrom.connectors.sinks.dev import DevSink
-    from datenstrom.connectors.sinks.kafka import KafkaSink
-    from datenstrom.connectors.sinks.sqs import SQSSink
-
     if config.sink == "kafka":
+        from datenstrom.connectors.sinks.kafka import KafkaSink
         app.state.sink = KafkaSink(config=config, queue_type="raw")
     elif config.sink == "dev":
+        from datenstrom.connectors.sinks.dev import DevSink
         app.state.sink = DevSink(config=config, queue_type="raw")
     elif config.sink == "sqs":
+        from datenstrom.connectors.sinks.sqs import SQSSink
         app.state.sink = SQSSink(config=config, queue_type="raw")
     else:
         raise ValueError(f"Unknown sink: {config.sink}")
