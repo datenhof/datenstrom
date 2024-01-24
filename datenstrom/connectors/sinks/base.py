@@ -15,7 +15,7 @@ class Sink(ABC):
         raise ValueError(f"Unknown queue type {queue_type} for sink.")
 
     @abstractmethod
-    def write(self, data: List[bytes]):
+    def write(self, data: List[bytes]) -> int:
         """Write data to the sink."""
         pass
 

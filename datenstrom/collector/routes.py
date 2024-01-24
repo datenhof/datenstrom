@@ -137,9 +137,11 @@ def write_to_sink(request: Request, e: CollectorPayload):
     sink = request.app.state.sink
     config = request.app.config
     try:
-        sink.write(e.split_and_serialize(config.record_format, max_size=config.max_bytes))
+        size = sink.write(e.split_and_serialize(config.record_format, max_size=config.max_bytes))
     except PayloadException as e:
-        print(f"PayloadException: {e}")
+        print(f"PayloadException: {e}", flush=True)
+    else:
+        print(f"wrote {size} bytes to sink", flush=True)
 
 
 def get_collector_payload(request: Request, body: Optional[bytes] = None,

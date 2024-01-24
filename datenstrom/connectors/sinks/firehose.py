@@ -62,11 +62,14 @@ class FirehoseSink(Sink):
         )
         return resp["RecordId"]
 
-    def write(self, data: List[bytes]):
+    def write(self, data: List[bytes]) -> int:
         """Write data to the development sink."""
+        size = 0
         for d in data:
             result_future = self._executor.submit(self._send, d)
             result_future.add_done_callback(self.on_result)
+            size += len(d)
+        return size
 
     def on_result(self, future):
         try:

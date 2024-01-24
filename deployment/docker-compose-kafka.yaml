@@ -1,8 +1,11 @@
 # docker-compose.yml
 version: "3.7"
 services:
+
   collector:
     image: mths/datenstrom-collector
+    restart: always
+    tty: true
     ports:
       - 8000:8000
     environment:
@@ -10,13 +13,27 @@ services:
       - SINK=kafka
       - KAFKA_BROKERS=kafka:9092
       - IGLU_SCHEMA_REGISTRIES=["http://iglucentral.com/schemas/"]
+      - KAFKA_TOPIC_RAW=datenstrom_raw
+      - KAFKA_TOPIC_EVENTS=datenstrom_events
+      - KAFKA_TOPIC_ERRORS=datenstrom_errors
+    depends_on:
+      - kafka
+
   enricher:
     image: mths/datenstrom-enricher
+    restart: always
+    tty: true
     environment:
       - RECORD_FORMAT=avro
       - SINK=kafka
       - KAFKA_BROKERS=kafka:9092
       - IGLU_SCHEMA_REGISTRIES=["http://iglucentral.com/schemas/"]
+      - KAFKA_TOPIC_RAW=datenstrom_raw
+      - KAFKA_TOPIC_EVENTS=datenstrom_events
+      - KAFKA_TOPIC_ERRORS=datenstrom_errors
+    depends_on:
+      - kafka
+
   zookeeper:
     restart: always
     image: docker.io/bitnami/zookeeper:3.9
@@ -26,6 +43,7 @@ services:
       - "zookeeper-volume:/bitnami"
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
+
   kafka:
     restart: always
     image: docker.io/bitnami/kafka:3.4
@@ -43,6 +61,7 @@ services:
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
     depends_on:
       - zookeeper
+
 volumes:
   kafka-volume:
   zookeeper-volume:

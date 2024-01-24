@@ -3,6 +3,8 @@ version: "3.7"
 services:
   collector:
     image: mths/datenstrom-collector
+    restart: always
+    tty: true
     ports:
       - 8000:8000
     environment:
@@ -19,6 +21,8 @@ services:
 
   enricher:
     image: mths/datenstrom-enricher
+    restart: always
+    tty: true
     environment:
       - RECORD_FORMAT=avro
       - SINK=sqs

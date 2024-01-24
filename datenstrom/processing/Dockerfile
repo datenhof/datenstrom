@@ -12,6 +12,4 @@ COPY datenstrom.processing/enricher_bin.pex /app/enricher_bin.pex
 
 RUN PEX_TOOLS=1 /usr/local/bin/python3.11 /app/enricher_bin.pex venv /venv
 
-EXPOSE 8000
-
-CMD ["enricher_bin.pex/__main__.py"]
+CMD ["python", "enricher_bin.pex/__main__.py"]

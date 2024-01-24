@@ -65,10 +65,13 @@ class KafkaSink(Sink):
             print(f"KafkaSink: too many errors, crashing")
             os.kill(os.getpid(), signal.SIGINT)
 
-    def write(self, data: List[bytes]):
+    def write(self, data: List[bytes]) -> int:
         """Write data to the development sink."""
+        size = 0
         for d in data:
             self._producer.produce(self.topic, d, callback=self.ack)
+            size += len(d)
+        return size
 
     def ack(self, err, msg):
         if err:

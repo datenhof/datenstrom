@@ -299,7 +299,10 @@ def to_avro(e: CollectorPayload):
 
 def from_avro(b: bytes) -> CollectorPayload:
     i = BytesIO(b)
-    d = schemaless_reader(i, AVRO_SCHEMA)
+    try:
+        d = schemaless_reader(i, AVRO_SCHEMA)
+    except EOFError:
+        raise ValueError(f"Invalid AVRO message: {b}")
     return CollectorPayload(
         schema=d["schema"],
         ipAddress=d["ipAddress"],

@@ -12,4 +12,4 @@ RUN PEX_TOOLS=1 /usr/local/bin/python3.11 /app/collector_bin.pex venv /venv
 
 EXPOSE 8000
 
-CMD ["collector_bin.pex/__main__.py"]
+CMD ["python", "collector_bin.pex/__main__.py"]

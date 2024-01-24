@@ -9,11 +9,14 @@ class DevSink(Sink):
         super().__init__(config, queue_type=queue_type)
         self.last_record = None
 
-    def write(self, data: List[bytes]):
+    def write(self, data: List[bytes]) -> int:
         """Write data to std out."""
+        size = 0
         for d in data:
             self.last_record = d
             print(d)
+            size += len(d)
+        return size
 
     def close(self):
         """Close the sink."""

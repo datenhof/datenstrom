@@ -100,4 +100,4 @@ class Enricher:
                 message.ack()
             t = (time.time() - t0) * 1000.0
             if counter > 0:
-                print(f"processed {counter} messages in {t:.2f} milliseconds")
+                print(f"processed {counter} messages in {t:.2f} milliseconds", flush=True)
