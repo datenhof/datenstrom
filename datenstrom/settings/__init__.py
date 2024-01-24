@@ -22,6 +22,7 @@ class BaseConfig(BaseSettings):
         "com.ruzd"
     ]
     enable_redirect_tracking: bool = False
+    domain_check_regex: Optional[str] = None
 
     iglu_schema_registries: List[str] = [
         "http://iglucentral.com/schemas/",

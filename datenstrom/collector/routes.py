@@ -1,5 +1,6 @@
 import time
 import uuid
+import re
 from datetime import datetime, timedelta, timezone
 
 from urllib.parse import urlparse
@@ -66,12 +67,30 @@ def make_response(request: Request, pixel: bool = False,
 
 @router.get("/")
 def root():
-    return {"service": "datenstrom-collector"}
+    # request.url.hostname
+    return Response(content="\U0001F44B Hello, I am you friendly neighborhood datenstrom collector",
+                    media_type="text/plain")
 
 
 @router.get("/health")
-def health():
-    return {"i am": "ok"}
+def health(request: Request):
+    return {"i am": "ok", "hostname": request.url.hostname}
+
+
+@router.get("/check_domain")
+def check_domain(request: Request):
+    config = request.app.config
+    if not config.domain_check_regex:
+        return Response(content="no domain_check_regex config", status_code=400)
+    if config.domain_check_regex == "*":
+        return Response(content="ok", status_code=200)
+    domain = request.query_params.get("domain")
+    if not domain:
+        return Response(content="no domain query param", status_code=400)
+    # check if domain matches regex
+    if re.match(config.domain_check_regex, domain):
+        return Response(content="ok", status_code=200)
+    return Response(content="domain does not match domain_check_regex", status_code=400)
 
 
 def get_anonymous(request: Request) -> bool:

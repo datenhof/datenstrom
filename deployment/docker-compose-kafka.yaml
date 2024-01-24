@@ -2,15 +2,16 @@
 version: "3.7"
 services:
   collector:
-    image: datenstrom-collector
-    ports: 8000:8000
+    image: mths/datenstrom-collector
+    ports:
+      - 8000:8000
     environment:
       - RECORD_FORMAT=avro
       - SINK=kafka
       - KAFKA_BROKERS=kafka:9092
       - IGLU_SCHEMA_REGISTRIES=["http://iglucentral.com/schemas/"]
   enricher:
-    image: datenstrom-enricher
+    image: mths/datenstrom-enricher
     environment:
       - RECORD_FORMAT=avro
       - SINK=kafka

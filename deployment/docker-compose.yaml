@@ -2,8 +2,9 @@
 version: "3.7"
 services:
   collector:
-    image: datenstrom-collector
-    ports: 8000:8000
+    image: mths/datenstrom-collector
+    ports:
+      - 8000:8000
     environment:
       - RECORD_FORMAT=avro
       - SINK=sqs
@@ -13,9 +14,11 @@ services:
       - SECRET_KEY=somethingsomethingdarkside
       - 'IGLU_SCHEMA_REGISTRIES=["http://iglucentral.com/schemas/"]'
       - GEOIP_ENABLED=true
+      - AWS_DEFAULT_REGION=eu-central-1
+      - 'DOMAIN_CHECK_REGEX=".*\\.datenstrom\\.io"'
 
   enricher:
-    image: datenstrom-enricher
+    image: mths/datenstrom-enricher
     environment:
       - RECORD_FORMAT=avro
       - SINK=sqs
@@ -25,3 +28,5 @@ services:
       - SECRET_KEY=somethingsomethingdarkside
       - 'IGLU_SCHEMA_REGISTRIES=["http://iglucentral.com/schemas/"]'
       - GEOIP_ENABLED=true
+      - AWS_DEFAULT_REGION=eu-central-1
+
