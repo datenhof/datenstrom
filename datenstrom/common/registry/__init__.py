@@ -1,12 +1,12 @@
 from typing import List, Optional, NamedTuple, Any, Type
-from functools import lru_cache
 
 from jsonschema import Draft202012Validator
 from jsonschema.protocols import Validator
 from jsonschema.exceptions import SchemaError, ValidationError
-import orjson
+from functools import lru_cache
 import requests
 
+from datenstrom.common.cache import TTLCache, cachedmethod
 from datenstrom.common.schema.atomic import ATOMIC_EVENT_SCHEMA
 from datenstrom.common.schema.events import STATIC_JSON_SCHEMAS
 
@@ -14,7 +14,8 @@ from datenstrom.common.schema.events import STATIC_JSON_SCHEMAS
 IGLU_BASE_URL = "http://iglucentral.com/schemas/"
 IGNORE_META_SCHEMA = True
 MAX_SCHEMA_SIZE =  32 * 1024  # 32kb
-CACHE_SIZE = 1024
+WEB_REQUEST_CACHE_SIZE = 1024
+VALIDATOR_CACHE_SIZE = 128
 
 
 class SchemaNotFound(Exception):
@@ -41,6 +42,9 @@ class IgluSchema(NamedTuple):
     def to_iglu(self) -> str:
         return f"iglu:{self.to_path()}"
 
+    def hashkey(self) -> str:
+        return self.to_iglu()
+
 
 class JsonSchema(dict):
     pass
@@ -50,6 +54,7 @@ class SchemaRegistry:
     def __init__(self, config: Optional[Any] = None):
         self.config = config
         self.iglu_registries: List[str] = []
+        self.request_cache = TTLCache(maxsize=WEB_REQUEST_CACHE_SIZE, ttl=3600, none_ttl=60)
         self.setup()
 
     def setup(self) -> None:
@@ -152,7 +157,8 @@ class SchemaRegistry:
 
         raise SchemaNotFound(f"Schema not found: {iglu_schema}")
 
-    def _load_iglu_from_repository(self, iglu_schema: IgluSchema) -> JsonSchema:
+    @cachedmethod(lambda self: self.request_cache, key=lambda s, iglus: iglus.hashkey())
+    def _load_iglu_from_repository(self, iglu_schema: IgluSchema) -> Optional[JsonSchema]:
         # TODO: Implement better retry logic
         for registry in self.iglu_registries:
             url = registry + iglu_schema.to_path()
@@ -168,6 +174,8 @@ class SchemaRegistry:
                 raise SchemaError(f"Schema ({iglu_schema}) too large: {content_length} bytes")
             # parse response json
             return JsonSchema(r.json())
+        # schema not found
+        return None
 
     def _get_validator_and_check_schema(self, schema: Any) -> Type[Validator]:
         # get the meta schema
@@ -177,7 +185,7 @@ class SchemaRegistry:
         validator_cls.check_schema(schema)
         return validator_cls(schema)
 
-    @lru_cache(maxsize=CACHE_SIZE)
+    @lru_cache(maxsize=VALIDATOR_CACHE_SIZE)
     def get_iglu_schema_validator(self, schema: str) -> Validator:
         # TODO: Cache Exceptions
         iglu_schema = self.parse_iglu_schema(schema)

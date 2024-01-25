@@ -64,6 +64,8 @@ class BaseConfig(BaseSettings):
     authentication_aud: Optional[str] = None
     authentication_iss_jwk_urls: Optional[Dict[str, str]] = None
 
+    tenant_lookup_endpoint: Optional[str] = None
+
     @classmethod
     def settings_customise_sources(
         cls,

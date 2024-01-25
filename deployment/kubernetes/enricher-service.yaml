@@ -34,8 +34,6 @@ spec:
           value: "datenstrom_events"
         - name: SQS_QUEUE_ERRORS
           value: "datenstrom_errors"
-        - name: SECRET_KEY
-          value: "somethingsomethingdarkside"
         - name: IGLU_SCHEMA_REGISTRIES
           value: "[\"http://iglucentral.com/schemas/\", \"http://ruzd-schemas.s3-website.eu-central-1.amazonaws.com/schemas/\"]"
         - name: GEOIP_ENABLED

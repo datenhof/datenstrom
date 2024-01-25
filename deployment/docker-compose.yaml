@@ -13,7 +13,6 @@ services:
       - SQS_QUEUE_RAW=datenstrom_raw
       - SQS_QUEUE_EVENTS=datenstrom_events
       - SQS_QUEUE_ERRORS=datenstrom_errors
-      - SECRET_KEY=somethingsomethingdarkside
       - 'IGLU_SCHEMA_REGISTRIES=["http://iglucentral.com/schemas/"]'
       - GEOIP_ENABLED=true
       - AWS_DEFAULT_REGION=eu-central-1
@@ -29,8 +28,6 @@ services:
       - SQS_QUEUE_RAW=datenstrom_raw
       - SQS_QUEUE_EVENTS=datenstrom_events
       - SQS_QUEUE_ERRORS=datenstrom_errors
-      - SECRET_KEY=somethingsomethingdarkside
       - 'IGLU_SCHEMA_REGISTRIES=["http://iglucentral.com/schemas/"]'
       - GEOIP_ENABLED=true
       - AWS_DEFAULT_REGION=eu-central-1
-
