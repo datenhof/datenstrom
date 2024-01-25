@@ -28,6 +28,8 @@ class SQSSource(Source):
 
         if self.queue_type == "raw":
             self.queue = self.sqs.Queue(config.sqs_queue_raw)
+        elif self.queue_type == "events":
+            self.queue = self.sqs.Queue(config.sqs_queue_events)
         else:
             raise ValueError(f"Unknown queue type {queue_type} for source.")
 

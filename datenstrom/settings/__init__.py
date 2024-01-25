@@ -33,9 +33,12 @@ class BaseConfig(BaseSettings):
     geoip_db_url: str = "https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-City.mmdb"
     geoip_db_file: str = "GeoLite2-City.mmdb"
 
-    record_format: Literal["thrift", "avro"]
-    sink: Literal["dev", "kafka", "sqs"]
-    event_sink: Optional[Literal["dev", "kafka", "sqs", "firehose"]] = None
+    record_format: Literal["thrift", "avro"] = "avro"
+    transport: Literal["kafka", "sqs", "dev"]
+    atomic_event_transport: Optional[Literal["dev", "kafka", "sqs", "firehose"]] = None
+
+    # sink: Optional[Literal["dev", "kafka", "sqs"]] = None
+    # source: Optional[Literal["dev", "kafka", "sqs"]] = None
 
     sqs_queue_raw: Optional[str] = None
     sqs_queue_events: Optional[str] = None
@@ -91,6 +94,6 @@ def get_settings():
 def get_test_settings():
     config_cls = BaseConfig
     return config_cls(
-        sink="dev",
+        transport="dev",
         record_format="avro"
     )

@@ -17,7 +17,7 @@ services:
       - 'IGLU_SCHEMA_REGISTRIES=["http://iglucentral.com/schemas/"]'
       - GEOIP_ENABLED=true
       - AWS_DEFAULT_REGION=eu-central-1
-      - 'DOMAIN_CHECK_REGEX=".*\\.datenstrom\\.io"'
+      - 'DOMAIN_CHECK_REGEX=.*[.]datenstrom[.]io'
 
   enricher:
     image: mths/datenstrom-enricher

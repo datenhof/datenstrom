@@ -38,7 +38,7 @@ def last_record():
 
 def test_config():
     assert client.app.config.kafka_brokers == "testbroker:9092"
-    assert client.app.config.sink == "dev"
+    assert client.app.config.transport == "dev"
 
 
 def test_health():
