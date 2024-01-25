@@ -18,9 +18,7 @@ class BaseConfig(BaseSettings):
     asset_dir: str = os.path.join(_base_dir, "assets")
     max_bytes: int = 190000  # 190 kB < 256 kb after base64 for SQS
 
-    vendors: List[str] = [
-        "com.ruzd"
-    ]
+    add_vendor_paths: Optional[List[str]] = None
     enable_redirect_tracking: bool = False
     domain_check_regex: Optional[str] = None
 

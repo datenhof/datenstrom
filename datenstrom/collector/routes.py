@@ -194,6 +194,7 @@ async def get_i(request: Request):
     return make_response(request, pixel=True, anonymous=anonymous, user_id=e.networkUserId)
 
 
+@router.get("/r")
 @router.get("/r/tp2")
 async def get_r(request: Request):
     config = request.app.config
@@ -224,6 +225,16 @@ async def get_v1(request: Request, vendor: str):
     e = get_collector_payload(request, anonymous=anonymous)
     write_to_sink(request, e)
     return make_response(request, pixel=True, anonymous=anonymous, user_id=e.networkUserId)
+
+
+@router.get("/{vendor}/tp2")
+async def vendor_post_tp2(vendor: str, request: Request):
+    anonymous = get_anonymous(request)
+    body = await request.body()
+    e = get_collector_payload(request, body=body, anonymous=anonymous)
+    write_to_sink(request, e)
+    return make_response(request, anonymous=anonymous, user_id=e.networkUserId)
+
 
 
 def add_vendor_path(path: str):

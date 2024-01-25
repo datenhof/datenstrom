@@ -1,7 +1,4 @@
 {
-    "vendors": [
-        "io.datenstrom"
-    ],
     "kafka_brokers": "testbroker:9092",
     "record_format": "avro",
     "transport": "dev",

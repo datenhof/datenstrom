@@ -40,10 +40,12 @@ def create_app() -> FastAPI:
     else:
         raise ValueError(f"Unknown transport sink: {config.transport}")
 
+
     from datenstrom.collector.routes import add_vendor_path, router
 
-    for vendor in config.vendors:
-        add_vendor_path(vendor)
+    if config.add_vendor_paths:
+        for vendor in config.add_vendor_paths:
+            add_vendor_path(vendor)
     app.include_router(router)
 
     return app

@@ -9,7 +9,7 @@ s = Subject()
 s.set_user_id('user_id')
 t = Snowplow.create_tracker(namespace='namespace', endpoint='http://localhost:8000',
                             tracker_config=tracker_config, emitter_config=emitter_config,
-                            subject=s, method='get')
+                            subject=s)
 page_view = PageView(
   page_url="http://www.example.com",
   page_title="title",
