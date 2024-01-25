@@ -1,11 +1,13 @@
 import os
 import json
 import base64
+import pytest
 
 from datenstrom.processing.raw_processor import RawProcessor
 from datenstrom.common.schema.raw import from_avro
 from datenstrom.settings import get_test_settings
-
+from datenstrom.processing.enrichments.base import TemporaryAtomicEvent
+from datenstrom.processing.enricher import Enricher
 
 test_config = get_test_settings()
 
@@ -19,6 +21,7 @@ def load_data():
     for t in ["event1", "webevent", "webevent_get", "iglu_event"]:
         temp = base64.b64decode(test_data[t])
         data_d[t] = from_avro(temp)
+    data_d["webevent_raw"] = base64.b64decode(test_data["webevent_get"])
     return data_d
 
 
@@ -94,3 +97,28 @@ def test_raw_iglu():
     assert iglu_event["event"]["schema_name"] == 'iglu:com.snowplowanalytics.snowplow/social_interaction/jsonschema/1-0-0'
     assert iglu_event["event"]["data"]["action"] == 'retweet'
     assert iglu_event["event"]["data"]["network"] == 'twitter'
+
+
+def test_enricher_invalid_event():
+    d = load_data()
+    raw_event = d["webevent_raw"]
+    enricher = Enricher(test_config)
+
+    # valid event
+    payload = enricher._decode_raw_message(raw_event)
+    ev = enricher.process_raw(payload)
+    assert ev is True
+
+    # invalid event
+    payload2 = enricher._decode_raw_message(raw_event)
+    payload2.querystring = "e=pv"
+    ev = enricher.process_raw(payload2)
+    assert ev is False
+
+
+def test_invalid_temporary_atomic_event():
+    d = load_data()
+    raw_event = d["webevent_get"]
+    ta = TemporaryAtomicEvent(None)
+    with pytest.raises(ValueError):
+        ta.to_atomic_event()

@@ -39,6 +39,8 @@ class BaseProcessor:
         elif transport == "kafka":
             from datenstrom.connectors.sources.kafka import KafkaSource
             self.source = KafkaSource(config=config, queue_type=queue_type)
+        elif transport == "dev":
+            self.source = None
         else:
             raise ValueError(f"Cannot use source {transport} as processor source.")
 
@@ -56,7 +58,7 @@ class BaseProcessor:
             elif self.config.record_format == "thrift":
                 payload = CollectorPayload.from_thrift(message)
         except ValueError as e:
-            print(f"invalid message: {e}")
+            print(f"cannot decode message: {e}")
             # self.error_sink.write([message])
             return None
         return payload

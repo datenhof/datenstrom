@@ -9,7 +9,7 @@ services:
       - 8000:8000
     environment:
       - RECORD_FORMAT=avro
-      - SINK=sqs
+      - TRANSPORT=sqs
       - SQS_QUEUE_RAW=datenstrom_raw
       - SQS_QUEUE_EVENTS=datenstrom_events
       - SQS_QUEUE_ERRORS=datenstrom_errors
@@ -25,7 +25,7 @@ services:
     tty: true
     environment:
       - RECORD_FORMAT=avro
-      - SINK=sqs
+      - TRANSPORT=sqs
       - SQS_QUEUE_RAW=datenstrom_raw
       - SQS_QUEUE_EVENTS=datenstrom_events
       - SQS_QUEUE_ERRORS=datenstrom_errors

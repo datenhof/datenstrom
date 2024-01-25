@@ -10,7 +10,7 @@ services:
       - 8000:8000
     environment:
       - RECORD_FORMAT=avro
-      - SINK=kafka
+      - TRANSPORT=kafka
       - KAFKA_BROKERS=kafka:9092
       - IGLU_SCHEMA_REGISTRIES=["http://iglucentral.com/schemas/"]
       - KAFKA_TOPIC_RAW=datenstrom_raw
@@ -25,7 +25,7 @@ services:
     tty: true
     environment:
       - RECORD_FORMAT=avro
-      - SINK=kafka
+      - TRANSPORT=kafka
       - KAFKA_BROKERS=kafka:9092
       - IGLU_SCHEMA_REGISTRIES=["http://iglucentral.com/schemas/"]
       - KAFKA_TOPIC_RAW=datenstrom_raw

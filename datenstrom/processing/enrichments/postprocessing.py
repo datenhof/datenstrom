@@ -26,3 +26,7 @@ class PostProcessingEnrichment(BaseEnrichment):
 
         # set etl timestamp
         event.set_value("etl_tstamp", datetime.now(timezone.utc))
+
+        # set platform to web if not set
+        if "platform" not in event:
+            event.set_value("platform", "web")

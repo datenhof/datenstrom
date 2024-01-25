@@ -504,7 +504,7 @@ STATIC_JSON_SCHEMAS = {
     "com.snowplowanalytics.snowplow/contexts/jsonschema/1-0-1": CONTEXTS_SCHEMA,
 
     "io.datenstrom/page_view/jsonschema/1-0-0": PAGE_VIEW_SCHEMA,
-    "io.datenstrom/page_ping/jsonschema/1-0-1": PAGE_PING_SCHEMA,
+    "io.datenstrom/page_ping/jsonschema/1-0-0": PAGE_PING_SCHEMA,
     "io.datenstrom/structured_event/jsonschema/1-0-0": STRUCTURED_EVENT_SCHEMA,
     "io.datenstrom/transaction/jsonschema/1-0-0": TRANSACTION_SCHEMA,
     "io.datenstrom/transaction_item/jsonschema/1-0-0": TRANSACTION_ITEM_SCHEMA,

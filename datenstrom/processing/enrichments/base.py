@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Any, Optional, Dict, List
 
+from pydantic import ValidationError
+
 from datenstrom.common.schema.raw import CollectorPayload
 from datenstrom.common.schema.atomic import AtomicEvent, SelfDescribingContext, SelfDescribingEvent
 
@@ -64,7 +66,13 @@ class TemporaryAtomicEvent():
         # for k, v in self.temp_data.items():
         #     if k in self.MODEL_FIELDS:
         #         self.atomic[k] = v
-        return AtomicEvent(**self.atomic)
+        try:
+            return AtomicEvent(**self.atomic)
+        except ValidationError as e:
+            errors = e.errors()
+            no_errors = len(errors)
+            fields = fields = [" ".join(err["loc"]) for err in e.errors()]
+            raise ValueError(f"Invalid atomic event: {no_errors} errors in {fields}")
 
     def get_event(self) -> Optional[SelfDescribingEvent]:
         return self.atomic.get("event")

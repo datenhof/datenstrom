@@ -45,15 +45,14 @@ class Enricher(RawEventProcessor):
         except SchemaNotFound as e:
             print(f"schema not found: {e}")
             # self.error_sink.write([message])
-            return []
+            return False
         except SchemaError as e:
             print(f"schema error: {e}")
             # self.error_sink.write([message])
-            return []
+            return False
         except ValueError as e:
-            print(f"invalid message: {e}")
-            # self.error_sink.write([message])
-            return []
+            print(e)
+            return False
 
         self.sink.write(enriched_events)
         return True

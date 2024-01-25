@@ -69,7 +69,7 @@ class SchemaRegistry:
         try:
             validator.validate(data)
         except ValidationError as e:
-            raise ValueError(f"Failed to validate data: {e}")
+            raise ValueError(f"Failed to validate {schema}: {e.message}")
 
     def is_valid(self, schema: str, data: Any) -> bool:
         t = self.get_schema_type(schema)
