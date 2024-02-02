@@ -39,7 +39,7 @@ class Enricher(RawEventProcessor):
             output_messages.append(json_string.encode("utf-8"))
         return output_messages
 
-    def process(self, event: CollectorPayload) -> bool:
+    def process_single(self, event: CollectorPayload) -> bool:
         try:
             enriched_events = self.enrich(event)
         except SchemaNotFound as e:
@@ -56,6 +56,9 @@ class Enricher(RawEventProcessor):
 
         self.sink.write(enriched_events)
         return True
+
+    def process(self, raw_events: List[CollectorPayload]) -> List[bool]:
+        return [self.process_single(e) for e in raw_events]
 
 
 if __name__ == "__main__":

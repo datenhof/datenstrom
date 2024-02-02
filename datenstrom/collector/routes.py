@@ -77,20 +77,20 @@ def health(request: Request):
     return {"i am": "ok", "hostname": request.url.hostname}
 
 
-@router.get("/check_domain")
-def check_domain(request: Request):
-    config = request.app.config
-    if not config.domain_check_regex:
-        return Response(content="no domain_check_regex config", status_code=400)
-    if config.domain_check_regex == "*":
-        return Response(content="ok", status_code=200)
-    domain = request.query_params.get("domain")
-    if not domain:
-        return Response(content="no domain query param", status_code=400)
-    # check if domain matches regex
-    if re.match(config.domain_check_regex, domain):
-        return Response(content="ok", status_code=200)
-    return Response(content="domain does not match domain_check_regex", status_code=400)
+# @router.get("/check_domain")
+# def check_domain(request: Request):
+#     config = request.app.config
+#     if not config.domain_check_regex:
+#         return Response(content="no domain_check_regex config", status_code=400)
+#     if config.domain_check_regex == "*":
+#         return Response(content="ok", status_code=200)
+#     domain = request.query_params.get("domain")
+#     if not domain:
+#         return Response(content="no domain query param", status_code=400)
+#     # check if domain matches regex
+#     if re.match(config.domain_check_regex, domain):
+#         return Response(content="ok", status_code=200)
+#     return Response(content="domain does not match domain_check_regex", status_code=400)
 
 
 def get_anonymous(request: Request) -> bool:
@@ -227,14 +227,13 @@ async def get_v1(request: Request, vendor: str):
     return make_response(request, pixel=True, anonymous=anonymous, user_id=e.networkUserId)
 
 
-@router.get("/{vendor}/tp2")
+@router.post("/{vendor}/tp2")
 async def vendor_post_tp2(vendor: str, request: Request):
     anonymous = get_anonymous(request)
     body = await request.body()
     e = get_collector_payload(request, body=body, anonymous=anonymous)
     write_to_sink(request, e)
     return make_response(request, anonymous=anonymous, user_id=e.networkUserId)
-
 
 
 def add_vendor_path(path: str):

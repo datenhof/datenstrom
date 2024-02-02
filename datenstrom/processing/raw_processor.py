@@ -39,9 +39,7 @@ def get_iglu_schema_for_event_type(event_type: str) -> str:
 
 
 class ProcessingInfoEnrichment(BaseEnrichment):
-    def __init__(self, config: Any,
-                 tenant_getter: Optional[Callable] = None) -> None:
-        self.tenant_getter = tenant_getter
+    def __init__(self, config: Any) -> None:
         super().__init__(config=config)
 
     def enrich(self, event: TemporaryAtomicEvent) -> None:
@@ -50,12 +48,6 @@ class ProcessingInfoEnrichment(BaseEnrichment):
         event.set_value("v_collector", event.raw_event.collector)
         event.set_value("collector_tstamp", transform_tstamp(event.raw_event.timestamp))
         event.set_value("collector_host", event.raw_event.hostname)
-
-        # getting tenant information
-        if self.tenant_getter:
-            tenant = self.tenant_getter(event.raw_event)
-            if tenant:
-                event.set_value("tenant", tenant)
 
 
 class RawProcessor():

@@ -2,7 +2,7 @@ import os
 import signal
 import base64
 
-from typing import List, Any
+from typing import List, Any, Optional
 from datetime import datetime, timezone, timedelta
 import boto3
 import threading
@@ -21,12 +21,12 @@ boto3_client_lock = threading.Lock()
 class FirehoseSink(Sink):
     """Firehose sink class."""
 
-    def __init__(self, config: Any, queue_type: str):
+    def __init__(self, config: Any, queue_type: str, stream_name: Optional[str] = None):
         """Initialize."""
         super().__init__(config, queue_type=queue_type)
-        if not config.firehose_stream_name:
+        if not stream_name and not config.firehose_stream_name:
             raise ValueError("Missing firehose_stream_name config")
-        self.stream_name= config.firehose_stream_name
+        self.stream_name = stream_name or config.firehose_stream_name
 
         with boto3_client_lock:
             self.firehose = boto3.client("firehose")
@@ -53,6 +53,13 @@ class FirehoseSink(Sink):
             print(f"[Firehose Sink]: too many errors, crashing")
             os.kill(os.getpid(), signal.SIGINT)
 
+    def _send_bulk(self, messages: List[bytes]) -> str:
+        resp = self.firehose.put_record_batch(
+            DeliveryStreamName=self.stream_name,
+            Records=[{"Data": m} for m in messages]
+        )
+        return resp["RequestResponses"]
+
     def _send(self, message: bytes) -> str:
         resp = self.firehose.put_record(
             DeliveryStreamName=self.stream_name,
@@ -64,11 +71,9 @@ class FirehoseSink(Sink):
 
     def write(self, data: List[bytes]) -> int:
         """Write data to the development sink."""
-        size = 0
-        for d in data:
-            result_future = self._executor.submit(self._send, d)
-            result_future.add_done_callback(self.on_result)
-            size += len(d)
+        result_future = self._executor.submit(self._send_bulk, data)
+        result_future.add_done_callback(self.on_result)
+        size = sum([len(m) for m in data])
         return size
 
     def on_result(self, future):
@@ -77,6 +82,7 @@ class FirehoseSink(Sink):
         except Exception as exc:
             print(f"[Firehose Sink] Error: {exc}")
             self.count_err()
+            raise exc
         else:
             self.count_ok()
 

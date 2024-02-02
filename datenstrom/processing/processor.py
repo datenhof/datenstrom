@@ -49,7 +49,7 @@ class BaseProcessor:
             self._processor = self.process_raw
         elif queue_type == "events":
             self._decoder = self._decode_event_message
-            self._processor = self.process_event
+            self._processor = self.process_events
 
     def _decode_raw_message(self, message: bytes) -> Optional[CollectorPayload]:
         try:
@@ -65,31 +65,32 @@ class BaseProcessor:
 
     def _decode_event_message(self, message: bytes) -> Optional[AtomicEvent]:
         ev = AtomicEvent.model_validate_json(message)
-        print(ev)
         return ev
 
-    def process_event(self, event: AtomicEvent) -> bool:
-        raise NotImplementedError("process_event not implemented")
+    def process_events(self, events: List[AtomicEvent]) -> List[bool]:
+        raise NotImplementedError("process_events not implemented")
     
-    def process_raw(self, raw: CollectorPayload) -> bool:
+    def process_raw(self, raw_events: List[CollectorPayload]) -> List[bool]:
         raise NotImplementedError("process_raw not implemented")
 
     def run(self):
         signal_handler = SignalHandler()
         while not signal_handler.received_signal:
             messages = self.source.read()
+            if len(messages) == 0:
+                continue
             t0 = time.time()
-            success_counter = 0
-            error_counter = 0
+            decoded_messages = []
             for message in messages:
                 decoded_message = self._decoder(message.data())
-                if not decoded_message:
-                    continue
-                result = self._processor(decoded_message)
-                if result:
-                    success_counter += 1
-                else:
-                    error_counter += 1
+                if decoded_message:
+                    decoded_messages.append(decoded_message)
+            results = self._processor(decoded_messages)
+            success_counter = results.count(True)
+            error_counter = len(messages) - success_counter
+            # acknowledge messages
+            # TODO: implement batch ack
+            for message in messages:
                 message.ack()
             t = (time.time() - t0) * 1000.0
             if success_counter > 0 or error_counter > 0:
@@ -100,10 +101,10 @@ class RawEventProcessor(BaseProcessor):
     def __init__(self, config: BaseConfig):
         super().__init__(config, queue_type="raw")
 
-    def process_raw(self, raw: CollectorPayload) -> bool:
-        return self.process(raw)
+    def process_raw(self, raw_events: List[CollectorPayload]) -> List[bool]:
+        return self.process(raw_events)
     
-    def process(self, raw: CollectorPayload) -> bool:
+    def process(self, raw_events: List[CollectorPayload]) -> List[bool]:
         raise NotImplementedError("please implement process method")
 
 
@@ -111,10 +112,10 @@ class AtomicEventProcessor(BaseProcessor):
     def __init__(self, config: BaseConfig):
         super().__init__(config, queue_type="events")
 
-    def process_event(self, event: AtomicEvent) -> bool:
-        return self.process(event)
+    def process_events(self, events: List[AtomicEvent]) -> List[bool]:
+        return self.process(events)
     
-    def process(self, raw: AtomicEvent) -> bool:
+    def process(self, events: List[AtomicEvent]) -> List[bool]:
         raise NotImplementedError("please implement process method")
 
 

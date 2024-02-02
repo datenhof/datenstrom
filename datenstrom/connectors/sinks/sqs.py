@@ -100,6 +100,7 @@ class SQSSink(Sink):
         except Exception as exc:
             print(f"[SQS Sink] Error: {exc}")
             self.count_err()
+            raise exc
         else:
             self.count_ok()
 
