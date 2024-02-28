@@ -89,6 +89,14 @@ class AtomicEvent(BaseModel):
         dict_data["event"]["data"] = orjson.dumps(dict_data["event"]["data"]).decode("utf-8")
         return dict_data
 
+    # overwrite parent model_dump method with by_alias=True
+    def model_dump(self, by_alias: bool = True, **kwargs) -> Dict[str, Any]:
+        return super().model_dump(by_alias=by_alias, **kwargs)
+
+    # overwrite parent model_dump_json method with by_alias=True
+    def model_dump_json(self, by_alias: bool = True, **kwargs) -> str:
+        return super().model_dump_json(by_alias=by_alias, **kwargs)
+
 
 ATOMIC_EVENT_SCHEMA = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",

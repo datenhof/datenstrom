@@ -33,7 +33,7 @@ class BaseConfig(BaseSettings):
 
     record_format: Literal["thrift", "avro"] = "avro"
     transport: Literal["kafka", "sqs", "dev"]
-    atomic_event_transport: Optional[Literal["dev", "kafka", "sqs", "firehose"]] = None
+    atomic_event_transport: Optional[Literal["dev", "kafka", "sqs"]] = None
 
     # sink: Optional[Literal["dev", "kafka", "sqs"]] = None
     # source: Optional[Literal["dev", "kafka", "sqs"]] = None

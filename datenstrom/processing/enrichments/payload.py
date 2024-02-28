@@ -13,7 +13,7 @@ from datenstrom.processing.enrichments.transformer import (
     PAGE_PING_TRANSFORMATIONS,
     TRANSACTION_TRANSFORMATIONS,
     TRANSACTION_ITEM_TRANSFORMATIONS,
-    STRUCTURED_EVENT_SCHEMA
+    STRUCTURED_EVENT_TRANSFORMATIONS,
 )
 
 
@@ -85,7 +85,7 @@ class EventExtractionEnrichment(BaseEnrichment):
         elif event["event_name"] == "page_ping":
             run_transformations(event, PAGE_PING_TRANSFORMATIONS)
         elif event["event_name"] == "structured_event":
-            run_transformations(event, STRUCTURED_EVENT_SCHEMA)
+            run_transformations(event, STRUCTURED_EVENT_TRANSFORMATIONS)
         elif event["event_name"] == "transaction":
             run_transformations(event, TRANSACTION_TRANSFORMATIONS)
         elif event["event_name"] == "transaction_item":

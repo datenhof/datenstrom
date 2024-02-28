@@ -111,7 +111,7 @@ PAGE_PING_TRANSFORMATIONS = {
 }
 
 
-STRUCTURED_EVENT_SCHEMA = {
+STRUCTURED_EVENT_TRANSFORMATIONS = {
     "se_category": (transform_string, "category"),
     "se_action": (transform_string, "action"),
     "se_label": (transform_string, "label"),
