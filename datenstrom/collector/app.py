@@ -20,8 +20,17 @@ async def cors_preflight(request: Request, call_next):
     return response
 
 
+api_description = """
+Datenstrom Collector API with support for Snowplow Trackers.
+"""
+
+
 def create_app() -> FastAPI:
-    app = FastAPI()
+    app = FastAPI(
+        title="Datenstrom Collector",
+        description=api_description,
+        version="1.0.0",
+    )
 
     config = get_settings()
     app.config = config
@@ -40,12 +49,12 @@ def create_app() -> FastAPI:
     else:
         raise ValueError(f"Unknown transport sink: {config.transport}")
 
-
-    from datenstrom.collector.routes import add_vendor_path, router
-
+    from datenstrom.collector.routes import add_vendor_path, router, add_redirect_routes
+    app.include_router(router)
     if config.add_vendor_paths:
         for vendor in config.add_vendor_paths:
             add_vendor_path(vendor)
-    app.include_router(router)
+    if config.enable_redirect_tracking:
+        add_redirect_routes()
 
     return app

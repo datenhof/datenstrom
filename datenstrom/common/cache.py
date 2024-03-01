@@ -1,8 +1,11 @@
 import time
 import collections
+import requests
+from typing import Optional, Dict
 
 from cachetools import Cache, cached, cachedmethod # noqa
 from cachetools import _TimedCache
+from cachetools.keys import hashkey
 
 
 class TTLCache(_TimedCache):
@@ -146,3 +149,55 @@ class TTLCache(_TimedCache):
         value = self.__links[key]
         self.__links.move_to_end(key)
         return value
+
+
+class CachedRequestClient:
+    def __init__(self, maxsize: int, ttl: int, none_ttl: Optional[int] = None):
+        self.cache = TTLCache(maxsize=maxsize, ttl=ttl, none_ttl=none_ttl)
+
+    def request(self, url: str, method: str = "GET", result: str = "text",
+                params: Optional[Dict[str, str]] = None,
+                headers: Optional[Dict[str, str]] = None,
+                **kwargs):
+        hashable_params = frozenset(params.items()) if params else None
+        hashable_headers = frozenset(headers.items()) if headers else None
+        key = hashkey(url, method, result, hashable_params, hashable_headers)
+        try:
+            #cache hit
+            return self.cache[key]
+        except KeyError:
+            # cache miss
+            pass
+
+        try:
+            response = requests.request(method, url, **kwargs)
+        except requests.RequestException:
+            print(f"Request to {url} failed", flush=True)
+            result = None
+        else:
+            if response.status_code < 200 or response.status_code >= 300:
+                result = None
+            else:
+                if result == "json":
+                    try:
+                        result = response.json()
+                    except requests.JSONDecodeError:
+                        print(f"Failed to decode JSON from {url}", flush=True)
+                        result = None
+                else:
+                    result = response.text
+
+        self.cache[key] = result
+        return result
+
+    def get(self, url: str,
+            params: Optional[Dict[str, str]] = None,
+            headers: Optional[Dict[str, str]] = None,
+            **kwargs):
+        return self.request(url, method="GET", result="text", params=params, headers=headers, **kwargs)
+
+    def get_json(self, url: str,
+                 params: Optional[Dict[str, str]] = None,
+                 headers: Optional[Dict[str, str]] = None,
+                 **kwargs):
+        return self.request(url, method="GET", result="json", params=params, headers=headers, **kwargs)

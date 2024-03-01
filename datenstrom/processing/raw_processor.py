@@ -5,14 +5,22 @@ from urllib.parse import parse_qs
 
 from datenstrom.common.schema.raw import CollectorPayload
 from datenstrom.common.schema.atomic import AtomicEvent
-from datenstrom.common.registry import SchemaRegistry
+from datenstrom.common.registry.manager import RegistryManager
 from datenstrom.processing.enrichments.transformer import TransformEnrichment, transform_tstamp
-from datenstrom.processing.enrichments.base import TemporaryAtomicEvent, BaseEnrichment
+from datenstrom.processing.enrichments.base import TemporaryAtomicEvent, BaseEnrichment, RemoteEnrichmentConfig
 from datenstrom.processing.enrichments.postprocessing import PostProcessingEnrichment
 from datenstrom.processing.enrichments.geoip import GeoIPEnrichment
 from datenstrom.processing.enrichments.tenant import TenantEnrichment
 from datenstrom.processing.enrichments.payload import ContextExtractionEnrichment, EventExtractionEnrichment
+from datenstrom.processing.enrichments.campaign import CampaignEnrichment
+from datenstrom.processing.enrichments.device import DeviceEnrichment
+from datenstrom.processing.enrichments.pii_processing import PIIProcessor
 from datenstrom.processing.version import VERSION
+from datenstrom.common.cache import CachedRequestClient
+
+
+httpclient = CachedRequestClient(maxsize=2048, ttl=3600, none_ttl=300)
+
 
 SP_PAYLOAD_SCHEMA_START = "iglu:com.snowplowanalytics.snowplow/payload_data/jsonschema/1"
 
@@ -37,7 +45,6 @@ def get_iglu_schema_for_event_type(event_type: str) -> str:
         raise ValueError(f"Invalid event type: {event_type}")
 
 
-
 class ProcessingInfoEnrichment(BaseEnrichment):
     def __init__(self, config: Any) -> None:
         super().__init__(config=config)
@@ -52,7 +59,7 @@ class ProcessingInfoEnrichment(BaseEnrichment):
 
 class RawProcessor():
     def __init__(self, config: Optional[Any] = None) -> None:
-        self.registry = SchemaRegistry(config=config)
+        self.registry = RegistryManager(config=config)
         self.enrichments = []
         self.config = config or {}
         self.setup_enrichments(self.config)
@@ -66,6 +73,10 @@ class RawProcessor():
             self.enrichments.append(TenantEnrichment(config=config))
         if config.get("geoip_enabled"):
             self.enrichments.append(GeoIPEnrichment(config=config))
+        if config.get("campaign_enrichment_enabled"):
+            self.enrichments.append(CampaignEnrichment(config=config))
+        if config.get("device_enrichment_enabled"):
+            self.enrichments.append(DeviceEnrichment(config=config))
         self.enrichments.append(PostProcessingEnrichment(config=config))
 
     def extract_events_from_body(self, body: bytes,
@@ -102,7 +113,21 @@ class RawProcessor():
             raise ValueError("Missing data in body")
         return [{"schema": data["schema"], "event": data["data"]}]
 
+    def get_remote_config(self, hostname: str) -> Optional[RemoteEnrichmentConfig]:
+        if self.config.remote_config_endpoint:
+            url = f"{self.config.remote_config_endpoint}?hostname={hostname}"
+            config = httpclient.get_json(url, timeout=5)
+            if config:
+                if "enable_full_ip" in config and isinstance(config["enable_full_ip"], bool):
+                    return RemoteEnrichmentConfig(enable_full_ip=config["enable_full_ip"])
+        return None
+
     def process_raw_event(self, raw_event: CollectorPayload) -> List[AtomicEvent]:
+        # get config for this host/collector
+        remote_config = None
+        if raw_event.hostname:
+            remote_config = self.get_remote_config(raw_event.hostname)
+
         # prepare the initial event dict
         event_dict = {}
         if raw_event.ipAddress:
@@ -157,11 +182,8 @@ class RawProcessor():
             for enrichment in self.enrichments:
                 enrichment.enrich(te)
 
-            # at this point we should have a valid atomic event
-            # get the inner event
-            # se = te.get_event()
-            # if not se:
-            #     raise ValueError("Missing event data")
+            # run pii redaction
+            PIIProcessor(remote_config).run(te)
 
             atomic_events.append(te.to_atomic_event())
         return atomic_events

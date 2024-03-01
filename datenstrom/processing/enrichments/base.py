@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Optional, Dict, List
+from typing import Any, Optional, Dict, List, NamedTuple
 
 from pydantic import ValidationError
 
@@ -93,3 +93,7 @@ class BaseEnrichment(ABC):
     def enrich(self, event: TemporaryAtomicEvent) -> None:
         """Enrich data."""
         pass
+
+
+class RemoteEnrichmentConfig(NamedTuple):
+    enable_full_ip: bool

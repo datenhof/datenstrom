@@ -330,10 +330,16 @@ PAGE_VIEW_SCHEMA = {
     "properties": {
         "page_url": {
             "type": ["string", "null"],
-            "maxLength": 4096
+        },
+        "page_title": {
+            "type": ["string", "null"],
+        },
+        "page_referrer": {
+            "type": ["string", "null"],
         },
     },
     "required": ["page_url"],
+    "additionalProperties": False
 }
 
 PAGE_PING_SCHEMA = {
@@ -359,7 +365,8 @@ PAGE_PING_SCHEMA = {
         "pp_yoffset_max": {
             "type": ["integer", "null"]
         },
-    }
+    },
+    "additionalProperties": False
 }
 
 
@@ -405,6 +412,7 @@ STRUCTURED_EVENT_SCHEMA = {
         }
     },
     "required": ["category", "action"],
+    "additionalProperties": False
 }
 
 
@@ -420,36 +428,67 @@ TRANSACTION_SCHEMA = {
     "type": "object",
     "properties": {
         "txn_id": {
-            "type": "string"
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "tr_id": {
-            "type": "string"
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "tr_af": {
-            "type": "string"
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "tr_tt": {
-            "type": "string"
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "tr_tx": {
-            "type": "string"
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "tr_sh": {
-            "type": "string"
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "tr_ci": {
-            "type": "string"
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "tr_st": {
-            "type": "string"
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "tr_co": {
-            "type": "string"
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "tr_cu": {
-            "type": "string"
+            "type": [
+                "string",
+                "null"
+            ]
         },
-    }
+    },
+    "additionalProperties": False
 }
 
 
@@ -465,30 +504,171 @@ TRANSACTION_ITEM_SCHEMA = {
     "type": "object",
     "properties": {
         "ti_id": {
-            "type": "string"
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "ti_sk": {
-            "type": "string"
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "ti_nm": {
-            "type": "string"
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "ti_na": {
-            "type": "string"
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "ti_ca": {
-            "type": "string"
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "ti_pr": {
-            "type": "string"
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "ti_qu": {
-            "type": "string"
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "ti_cu": {
-            "type": "string"
+            "type": [
+                "string",
+                "null"
+            ]
         },
-    }
+    },
+    "additionalProperties": False
+}
+
+
+CAMPAIGN_ATTRIBUTION_SCHEMA = {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "Schema for a transaction item",
+    "self": {
+        "vendor": "io.datenstrom",
+        "name": "campaign_attribution",
+        "format": "jsonschema",
+        "version": "1-0-0"
+    },
+    "type": "object",
+    "properties": {
+        "medium" : {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "source" : {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "campaign" : {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "term" : {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "content" : {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "click_id" : {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "network" : {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+    },
+    "additionalProperties": False
+}
+
+
+DEVICE_INFO_SCHEMA = {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "Schema for a transaction item",
+    "self": {
+        "vendor": "io.datenstrom",
+        "name": "device_info",
+        "format": "jsonschema",
+        "version": "1-0-0"
+    },
+    "type": "object",
+    "properties": {
+        "screen_resolution": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "viewport_resolution": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "browser_family": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "browser_version": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "os_family": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "os_version": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "device_family": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+    },
+    "additionalProperties": False
 }
 
 
@@ -508,4 +688,7 @@ STATIC_JSON_SCHEMAS = {
     "io.datenstrom/structured_event/jsonschema/1-0-0": STRUCTURED_EVENT_SCHEMA,
     "io.datenstrom/transaction/jsonschema/1-0-0": TRANSACTION_SCHEMA,
     "io.datenstrom/transaction_item/jsonschema/1-0-0": TRANSACTION_ITEM_SCHEMA,
+
+    "io.datenstrom/campaign_attribution/jsonschema/1-0-0": CAMPAIGN_ATTRIBUTION_SCHEMA,
+    "io.datenstrom/device_info/jsonschema/1-0-0": DEVICE_INFO_SCHEMA,
 }

@@ -21,7 +21,7 @@ class Source(ABC):
         self.queue_type = self.check_queue_type(queue_type)
 
     def check_queue_type(self, queue_type: str) -> str:
-        if queue_type in ("raw", "events"):
+        if queue_type in ("raw", "events", "errors"):
             return queue_type
         raise ValueError(f"Unknown queue type {queue_type} for source.")
 

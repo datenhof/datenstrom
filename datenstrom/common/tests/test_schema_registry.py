@@ -1,7 +1,8 @@
 import json
 
-from datenstrom.common.registry import SchemaRegistry
 from datenstrom.common.schema.atomic import AtomicEvent, SelfDescribingContext, SelfDescribingEvent
+from datenstrom.common.registry.iglu import IgluSchema, BaseIgluRegistry
+from datenstrom.common.registry.manager import RegistryManager
 
 
 iglu_base_schema = "iglu:com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0"
@@ -13,16 +14,26 @@ class DummyConfig:
     iglu_schema_registries = [
         "http://iglucentral.com/schemas/",
     ]
+    default_cache_ttl = 3600
+    none_cache_ttl = 60
+
+
+def test_iglu_parsing():
+    s = IgluSchema.from_string(iglu_base_schema)
+    assert s.vendor == "com.snowplowanalytics.self-desc"
+    assert s.name == "schema"
+    assert s.format == "jsonschema"
+    assert s.version == "1-0-0"
 
 
 def test_jsonschema():
-    r = SchemaRegistry(DummyConfig())
+    r = BaseIgluRegistry()
     res = r._get_validator_and_check_schema(iglu_base_schema_data)
     assert res
 
 
 def test_atomic_schema():
-    r = SchemaRegistry(DummyConfig())
+    r = RegistryManager(DummyConfig())
 
     ae = AtomicEvent(
         event_id="123",
@@ -53,4 +64,50 @@ def test_atomic_schema():
             )
         }
     )
-    res = r.validate("iglu:io.datenstrom/atomic/jsonschema/1-0-0", ae.model_dump(mode="json", by_alias=True))
+    r.validate("iglu:io.datenstrom/atomic/jsonschema/1-0-0", ae.model_dump(mode="json", by_alias=True))
+    assert r.is_valid("iglu:io.datenstrom/atomic/jsonschema/1-0-0", ae.model_dump(mode="json", by_alias=True))
+
+
+def test_structured_event():
+    r = RegistryManager(DummyConfig())
+    schema = "iglu:io.datenstrom/structured_event/jsonschema/1-0-0"
+    data1 = {
+        "invalid": "test"
+    }
+    data2 = {
+        "category": "abc",
+        "action": "act",
+        "value": "1"
+    }
+    assert not r.is_valid(schema, data1)
+    assert r.is_valid(schema, data2)
+
+
+def test_remote():
+    r = RegistryManager(DummyConfig())
+    schema = "iglu:com.snowplowanalytics.mobile/deep_link/jsonschema/1-0-0"
+    data1 = {
+        "invalid": "test"
+    }
+    data2 = {
+        "url": "https://www.example.com"
+    }
+    data3 = {
+        "url": "https://www.example.com",
+        "referrer": "https://www.example.com"
+    }
+    data4 = {
+        "url": "https://www.example.com",
+        "refesdsdrrer": "https://www.example.com"
+    }
+    assert not r.is_valid(schema, data1)
+    assert r.is_valid(schema, data2)
+    assert r.is_valid(schema, data3)
+    assert not r.is_valid(schema, data4)
+
+    assert r.get_schema_fields(schema) == ["url", "referrer"]
+    parts = r.get_schema_parts(schema)
+    assert parts.vendor == "com.snowplowanalytics.mobile"
+    assert parts.name == "deep_link"
+    assert parts.format == "jsonschema"
+    assert parts.version == "1-0-0"

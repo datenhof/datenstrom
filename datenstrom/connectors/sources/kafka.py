@@ -29,6 +29,8 @@ class KafkaSource(Source):
             self.topic = config.kafka_topic_raw
         elif self.queue_type == "events":
             self.topic = config.kafka_topic_events
+        elif self.queue_type == "errors":
+            self.topic = config.kafka_topic_errors
         else:
             raise ValueError(f"Unknown queue type {queue_type} for source.")
 

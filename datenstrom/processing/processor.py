@@ -1,9 +1,10 @@
 import time
 
-from typing import List, Literal, Any, Optional
+from typing import List, Literal, Union, Optional
 
-from datenstrom.common.schema.raw import CollectorPayload
+from datenstrom.common.schema.raw import CollectorPayload, ErrorPayload
 from datenstrom.common.schema.atomic import AtomicEvent
+from datenstrom.connectors.sinks.dev import DevSink
 # from datenstrom.common.registry import SchemaNotFound, SchemaError
 from signal import signal, SIGINT, SIGTERM
 from datenstrom.settings import BaseConfig
@@ -44,12 +45,25 @@ class BaseProcessor:
         else:
             raise ValueError(f"Cannot use source {transport} as processor source.")
 
+        self._default_error_sink = DevSink(config=config, queue_type="errors")
+        self.error_sink = self._default_error_sink
+
         if queue_type == "raw":
             self._decoder = self._decode_raw_message
             self._processor = self.process_raw
         elif queue_type == "events":
             self._decoder = self._decode_event_message
             self._processor = self.process_events
+        elif queue_type == "errors":
+            self._decoder = self._decode_error_message
+            self._processor = self.process_errors
+
+    def _decode_error_message(self, message: bytes) -> Union[ErrorPayload, bytes]:
+        try:
+            ev = ErrorPayload.model_validate_json(message)
+        except ValueError as e:
+            ev = message
+        return ev
 
     def _decode_raw_message(self, message: bytes) -> Optional[CollectorPayload]:
         try:
@@ -59,12 +73,27 @@ class BaseProcessor:
                 payload = CollectorPayload.from_thrift(message)
         except ValueError as e:
             print(f"cannot decode message: {e}")
-            # self.error_sink.write([message])
+            error = ErrorPayload(
+                collector_domain="unknown",
+                reason=f"cannot decode message: {e}",
+                payload=message,
+            )
+            self.error_sink.write([error.to_bytes()])
             return None
         return payload
 
     def _decode_event_message(self, message: bytes) -> Optional[AtomicEvent]:
-        ev = AtomicEvent.model_validate_json(message)
+        try:
+            ev = AtomicEvent.model_validate_json(message)
+        except ValueError as e:
+            print(f"cannot decode message: {e}")
+            error = ErrorPayload(
+                collector_domain="unknown",
+                reason=f"cannot decode message: {e}",
+                payload=message,
+            )
+            self.error_sink.write([error.to_bytes()])
+            return None
         return ev
 
     def process_events(self, events: List[AtomicEvent]) -> List[bool]:
@@ -119,12 +148,12 @@ class AtomicEventProcessor(BaseProcessor):
         raise NotImplementedError("please implement process method")
 
 
-# class ErrorEventProcessor(BaseProcessor):
-#     def __init__(self, config: BaseConfig):
-#         super().__init__(config, queue_type="error")
+class ErrorEventProcessor(BaseProcessor):
+    def __init__(self, config: BaseConfig):
+        super().__init__(config, queue_type="errors")
 
-#     def process_raw(self, raw: CollectorPayload) -> bool:
-#         return self.process(raw)
-    
-#     def process(self, raw: CollectorPayload) -> bool:
-#         raise NotImplementedError("please implement process method")
+    def process_errors(self, errors: List[Union[ErrorPayload, bytes]]) -> bool:
+        return self.process(errors)
+
+    def process(self, error: Union[ErrorPayload, bytes]) -> bool:
+        raise NotImplementedError("please implement process method")

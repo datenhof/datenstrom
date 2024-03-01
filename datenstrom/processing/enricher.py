@@ -1,10 +1,10 @@
 from typing import List
 
 from datenstrom.settings import BaseConfig, get_settings
-from datenstrom.common.schema.raw import CollectorPayload
+from datenstrom.common.schema.raw import CollectorPayload, ErrorPayload
 from datenstrom.processing.processor import RawEventProcessor
 from datenstrom.processing.raw_processor import RawProcessor
-from datenstrom.common.registry import SchemaNotFound, SchemaError
+from datenstrom.common.registry.base import SchemaNotFound, SchemaValidationError, InvalidSchemaError
 
 
 class Enricher(RawEventProcessor):
@@ -20,12 +20,15 @@ class Enricher(RawEventProcessor):
         if transport == "sqs":
             from datenstrom.connectors.sinks.sqs import SQSSink
             self.sink = SQSSink(config=config, queue_type="events")
+            self.error_sink = SQSSink(config=config, queue_type="errors")
         elif transport == "kafka":
             from datenstrom.connectors.sinks.kafka import KafkaSink
             self.sink = KafkaSink(config=config, queue_type="events")
+            self.error_sink = KafkaSink(config=config, queue_type="errors")
         elif transport == "dev":
             from datenstrom.connectors.sinks.dev import DevSink
             self.sink = DevSink(config=config, queue_type="events")
+            self.error_sink = DevSink(config=config, queue_type="errors")
         else:
             raise ValueError(f"Cannot use sink {transport} as enricher sink.")
 
@@ -44,14 +47,31 @@ class Enricher(RawEventProcessor):
             enriched_events = self.enrich(event)
         except SchemaNotFound as e:
             print(f"schema not found: {e}")
-            # self.error_sink.write([message])
+            error = ErrorPayload(collector_domain=event.hostname,
+                                 reason=f"schema not found: {e}",
+                                 payload=event.to_json().encode("utf-8"))
+            self.error_sink.write([error.to_bytes()])
             return False
-        except SchemaError as e:
-            print(f"schema error: {e}")
-            # self.error_sink.write([message])
+        except SchemaValidationError as e:
+            print(f"data validation error: {e}")
+            error = ErrorPayload(collector_domain=event.hostname,
+                                 reason=f"data validation error: {e}",
+                                 payload=event.to_json().encode("utf-8"))
+            self.error_sink.write([error.to_bytes()])
+            return False
+        except InvalidSchemaError as e:
+            print(f"invalid schema: {e}")
+            error = ErrorPayload(collector_domain=event.hostname,
+                                 reason=f"invalid schema: {e}",
+                                 payload=event.to_json().encode("utf-8"))
+            self.error_sink.write([error.to_bytes()])
             return False
         except ValueError as e:
-            print(e)
+            print(f"invalid event data: {e}")
+            error = ErrorPayload(collector_domain=event.hostname,
+                                 reason=f"invalid event data: {e}",
+                                 payload=event.to_json().encode("utf-8"))
+            self.error_sink.write([error.to_bytes()])
             return False
 
         self.sink.write(enriched_events)

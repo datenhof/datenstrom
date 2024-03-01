@@ -2,6 +2,7 @@ from typing import Optional, List, Dict
 from io import BytesIO
 import orjson
 import logging
+from datetime import datetime, timezone
 
 
 from thriftpy2.protocol.binary import TBinaryProtocol
@@ -130,6 +131,9 @@ class CollectorPayload(BaseModel):
         else:
             raise ValueError(f"Unknown format {format}")
 
+    def to_json(self):
+        return self.model_dump_json(by_alias=True)
+
     def to_thrift(self):
         return to_thrift(self)
 
@@ -155,6 +159,17 @@ class CollectorPayload(BaseModel):
     @classmethod
     def from_avro(cls, b: bytes):
         return from_avro(b)
+
+
+class ErrorPayload(BaseModel):
+    collector_domain: str
+    reason: str
+    tstamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    payload: Optional[bytes] = None
+
+    def to_bytes(self) -> bytes:
+        return self.model_dump_json(by_alias=True).encode("utf-8")
+
 
 # Thrift Schema
 

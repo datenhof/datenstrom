@@ -5,7 +5,7 @@ import base64
 
 from datenstrom.processing.enrichments.base import BaseEnrichment, TemporaryAtomicEvent
 from datenstrom.common.schema.atomic import AtomicEvent, SelfDescribingContext, SelfDescribingEvent
-from datenstrom.common.registry import SchemaRegistry
+from datenstrom.common.registry.manager import RegistryManager
 
 from datenstrom.processing.enrichments.transformer import (
     run_transformations,
@@ -26,7 +26,7 @@ def read_base64_json(data: str) -> Any:
 
 
 class EventExtractionEnrichment(BaseEnrichment):
-    def __init__(self, config: Any, registry: SchemaRegistry) -> None:
+    def __init__(self, config: Any, registry: RegistryManager) -> None:
         self.registry = registry
         super().__init__(config=config)
 
@@ -120,7 +120,7 @@ class EventExtractionEnrichment(BaseEnrichment):
 
 
 class ContextExtractionEnrichment(BaseEnrichment):
-    def __init__(self, config: Any, registry: SchemaRegistry) -> None:
+    def __init__(self, config: Any, registry: RegistryManager) -> None:
         self.registry = registry
         super().__init__(config=config)
 

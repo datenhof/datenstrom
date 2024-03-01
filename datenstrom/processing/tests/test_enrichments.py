@@ -5,6 +5,7 @@ from unittest.mock import patch
 from datenstrom.processing.enrichments.geoip import GeoIPEnrichment
 from datenstrom.processing.enrichments.tenant import TenantEnrichment
 from datenstrom.processing.enrichments.authentication import AuthenticationEnrichment
+from datenstrom.processing.enrichments.campaign import CampaignEnrichment
 from datenstrom.processing.enrichments.base import TemporaryAtomicEvent, CollectorPayload
 from datenstrom.settings import get_test_settings
 

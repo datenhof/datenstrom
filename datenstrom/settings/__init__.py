@@ -26,10 +26,13 @@ class BaseConfig(BaseSettings):
         "http://iglucentral.com/schemas/",
     ]
 
+    # Enrichments
     geoip_enabled: bool = False
     download_geoip_db: bool = False
     geoip_db_url: str = "https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-City.mmdb"
     geoip_db_file: str = "GeoLite2-City.mmdb"
+    campaign_enrichment_enabled: bool = True
+    device_enrichment_enabled: bool = True
 
     record_format: Literal["thrift", "avro"] = "avro"
     transport: Literal["kafka", "sqs", "dev"]
@@ -63,6 +66,11 @@ class BaseConfig(BaseSettings):
     authentication_iss_jwk_urls: Optional[Dict[str, str]] = None
 
     tenant_lookup_endpoint: Optional[str] = None
+
+    default_cache_ttl: int = 3600
+    none_cache_ttl: int = 60
+
+    remote_config_endpoint: Optional[str] = None
 
     @classmethod
     def settings_customise_sources(

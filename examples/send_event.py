@@ -7,7 +7,7 @@ tracker_config = TrackerConfiguration()
 emitter_config = EmitterConfiguration()
 s = Subject()
 s.set_user_id('user_id')
-t = Snowplow.create_tracker(namespace='namespace', endpoint='http://localhost:8000',
+t = Snowplow.create_tracker(namespace='namespace', endpoint='http://localhost:8001',
                             tracker_config=tracker_config, emitter_config=emitter_config,
                             subject=s)
 page_view = PageView(
