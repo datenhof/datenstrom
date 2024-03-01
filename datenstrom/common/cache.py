@@ -171,8 +171,8 @@ class CachedRequestClient:
 
         try:
             response = requests.request(method, url, **kwargs)
-        except requests.RequestException:
-            print(f"Request to {url} failed", flush=True)
+        except requests.RequestException as e:
+            print(f"Request to {url} failed: {e}", flush=True)
             result = None
         else:
             if response.status_code < 200 or response.status_code >= 300:
@@ -181,11 +181,13 @@ class CachedRequestClient:
                 if result == "json":
                     try:
                         result = response.json()
+                        print(f"[Cache Miss] Got JSON from {url}", flush=True)
                     except requests.JSONDecodeError:
                         print(f"Failed to decode JSON from {url}", flush=True)
                         result = None
                 else:
                     result = response.text
+                    print(f"[Cache Miss] Got text from {url}", flush=True)
 
         self.cache[key] = result
         return result
