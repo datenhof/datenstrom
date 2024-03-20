@@ -38,7 +38,7 @@ def test_raw_get():
     assert get_event["platform"] == 'web'
     assert get_event["event_name"] == 'page_view'
     assert len(get_event["contexts"]) == 2
-    assert 'iglu:com.snowplowanalytics.snowplow/web_page/jsonschema/1-0-0' in get_event["contexts"]
+    assert 'iglu:com.snowplowanalytics.snowplow/web_page/jsonschema/1-0-0' in [x["schema"] for x in get_event["contexts"]]
     assert get_event["event"]["schema"] == 'iglu:io.datenstrom/page_view/jsonschema/1-0-0'
     assert get_event["event"]["data"]["page_url"] == 'http://127.0.0.1:8000/?test=ok&hello=world'
 
@@ -79,7 +79,7 @@ def test_raw_post():
     assert post_event["user_ipaddress"] == '172.17.0.x'
     assert post_event["event_name"] == 'page_view'
     assert len(post_event["contexts"]) == 2
-    assert 'iglu:com.snowplowanalytics.snowplow/web_page/jsonschema/1-0-0' in post_event["contexts"]
+    assert 'iglu:com.snowplowanalytics.snowplow/web_page/jsonschema/1-0-0' in [x["schema"] for x in post_event["contexts"]]
     assert post_event["event"]["schema"] == 'iglu:io.datenstrom/page_view/jsonschema/1-0-0'
     assert post_event["event"]["data"]["page_url"] == 'http://127.0.0.1:8000/?test=ok&hello=world'
 
@@ -141,10 +141,10 @@ def test_campaign_enrichment():
     assert get_event["event"]["schema"] == 'iglu:io.datenstrom/page_view/jsonschema/1-0-0'
     assert get_event["event"]["data"]["page_url"] == page_url
     assert len(get_event["contexts"]) == 2
-
     contexts = get_event["contexts"]
-    attribution = contexts['iglu:io.datenstrom/campaign_attribution/jsonschema/1-0-0']
-    device_info = contexts['iglu:io.datenstrom/device_info/jsonschema/1-0-0']
+    context_schemas = [x["schema"] for x in contexts]
+    attribution = contexts[context_schemas.index('iglu:io.datenstrom/campaign_attribution/jsonschema/1-0-0')]
+    device_info = contexts[context_schemas.index('iglu:io.datenstrom/device_info/jsonschema/1-0-0')]
 
     assert attribution["schema"] == 'iglu:io.datenstrom/campaign_attribution/jsonschema/1-0-0'
     assert attribution["data"]["campaign"] == 'summer'
@@ -153,7 +153,6 @@ def test_campaign_enrichment():
     assert attribution["data"]["network"] == 'google'
     assert attribution["data"]["click_id"] == 'abc'
 
-    print(device_info)
     assert device_info["schema"] == 'iglu:io.datenstrom/device_info/jsonschema/1-0-0'
     assert device_info["data"]["browser_family"] == 'Chrome'
     assert device_info["data"]["os_family"] == 'Windows'

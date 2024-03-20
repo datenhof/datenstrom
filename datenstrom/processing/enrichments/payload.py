@@ -76,7 +76,6 @@ class EventExtractionEnrichment(BaseEnrichment):
         schema_parts = self.registry.get_schema_parts(schema)
         event.set_value("event_vendor", schema_parts.vendor)
         event.set_value("event_name", schema_parts.name)
-        event.set_value("event_format", schema_parts.format)
         event.set_value("event_version", schema_parts.version)
 
         # TODO custom logic for

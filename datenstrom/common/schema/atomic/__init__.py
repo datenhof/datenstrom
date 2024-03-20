@@ -1,18 +1,37 @@
 import orjson
 
-from typing import Optional, Any, Dict
+from typing import Optional, Any, Dict, List
 from datetime import datetime
+from io import BytesIO
+
 from pydantic import BaseModel, Field
+from fastavro import parse_schema, schemaless_writer, schemaless_reader
 
 
 class SelfDescribingEvent(BaseModel):
     schema_name: str = Field(alias="schema")
     data: dict[str, Any]
 
+    # overwrite parent model_dump method with by_alias=True
+    def model_dump(self, by_alias: bool = True, **kwargs) -> Dict[str, Any]:
+        return super().model_dump(by_alias=by_alias, **kwargs)
+
+    # overwrite parent model_dump_json method with by_alias=True
+    def model_dump_json(self, by_alias: bool = True, **kwargs) -> str:
+        return super().model_dump_json(by_alias=by_alias, **kwargs)
+
 
 class SelfDescribingContext(BaseModel):
     schema_name: str = Field(alias="schema")
     data: dict[str, Any]
+
+    # overwrite parent model_dump method with by_alias=True
+    def model_dump(self, by_alias: bool = True, **kwargs) -> Dict[str, Any]:
+        return super().model_dump(by_alias=by_alias, **kwargs)
+
+    # overwrite parent model_dump_json method with by_alias=True
+    def model_dump_json(self, by_alias: bool = True, **kwargs) -> str:
+        return super().model_dump_json(by_alias=by_alias, **kwargs)
 
 
 class AtomicEvent(BaseModel):
@@ -20,7 +39,6 @@ class AtomicEvent(BaseModel):
 
     # Application Fields
     collector_host: str
-    tenant: Optional[str] = None
     collector_auth: Optional[str] = None
     app_id: Optional[str] = None
     platform: str
@@ -28,7 +46,6 @@ class AtomicEvent(BaseModel):
     # metadata
     event_vendor: str
     event_name: str
-    event_format: str
     event_version: str
 
     # Date and Time Fields
@@ -72,16 +89,16 @@ class AtomicEvent(BaseModel):
     value: Optional[str] = None
 
     # Data
-    contexts: Dict[str, SelfDescribingContext] = Field(default_factory=dict)
+    contexts: List[SelfDescribingContext] = Field(default_factory=list)
     event: SelfDescribingEvent
 
     def to_hive_serializable(self):
         dict_data = self.model_dump(by_alias=True)
         # convert contexts to json
-        for s, context in dict_data["contexts"].items():
+        for i, context in enumerate(dict_data["contexts"]):
             schema = context["schema"]
             data = context["data"]
-            dict_data["contexts"][s] = {
+            dict_data["contexts"][i] = {
                 "schema": schema,
                 "data": orjson.dumps(data).decode("utf-8")
             }
@@ -96,6 +113,13 @@ class AtomicEvent(BaseModel):
     # overwrite parent model_dump_json method with by_alias=True
     def model_dump_json(self, by_alias: bool = True, **kwargs) -> str:
         return super().model_dump_json(by_alias=by_alias, **kwargs)
+
+    def to_avro(self):
+        return to_avro(self)
+
+    @classmethod
+    def from_avro(cls, b: bytes):
+        return from_avro(b)
 
 
 ATOMIC_EVENT_SCHEMA = {
@@ -117,10 +141,6 @@ ATOMIC_EVENT_SCHEMA = {
             "type": "string",
             "description": "Hostname of the collector"
         },
-        "tenant": {
-            "type": ["string", "null"],
-            "description": "Tenant ID"
-        },
         "collector_auth": {
             "type": ["string", "null"],
             "description": "Client authentication subject"
@@ -141,10 +161,6 @@ ATOMIC_EVENT_SCHEMA = {
         "event_name": {
             "type": "string",
             "description": "Name of the event schema"
-        },
-        "event_format": {
-            "type": "string",
-            "description": "Format of the event schema"
         },
         "event_version": {
             "type": "string",
@@ -276,8 +292,8 @@ ATOMIC_EVENT_SCHEMA = {
         },
 
         "contexts": {
-            "type": "object",
-            "additionalProperties": {
+            "type": "array",
+            "items": {
                 "type": "object",
                 "properties": {
                     "schema": {
@@ -310,7 +326,6 @@ ATOMIC_EVENT_SCHEMA = {
         "platform",
         "event_vendor",
         "event_name",
-        "event_format",
         "event_version",
         "tstamp",
         "collector_tstamp",
@@ -320,3 +335,88 @@ ATOMIC_EVENT_SCHEMA = {
         "event",
     ],
 }
+
+
+ATOMIC_AVRO_SCHEMA = {
+    "type": "record",
+    "name": "AtomicEvent",
+    "namespace": "io.datenstrom",
+    "fields": [
+        {"name": "event_id", "type": "string"},
+        {"name": "collector_host", "type": "string"},
+        {"name": "collector_auth", "type": ["null", "string"]},
+        {"name": "app_id", "type": ["null", "string"]},
+        {"name": "platform", "type": "string"},
+        {"name": "event_vendor", "type": "string"},
+        {"name": "event_name", "type": "string"},
+        {"name": "event_version", "type": "string"},
+        {"name": "tstamp", "type": "string"},
+        {"name": "collector_tstamp", "type": "string"},
+        {"name": "dvce_created_tstamp", "type": ["null", "string"]},
+        {"name": "dvce_sent_tstamp", "type": ["null", "string"]},
+        {"name": "true_tstamp", "type": ["null", "string"]},
+        {"name": "etl_tstamp", "type": "string"},
+        {"name": "v_tracker", "type": ["null", "string"]},
+        {"name": "v_collector", "type": "string"},
+        {"name": "v_etl", "type": "string"},
+        {"name": "name_tracker", "type": ["null", "string"]},
+        {"name": "user_ipaddress", "type": ["null", "string"]},
+        {"name": "user_id", "type": ["null", "string"]},
+        {"name": "session_id", "type": ["null", "string"]},
+        {"name": "session_idx", "type": ["null", "long"]},
+        {"name": "domain_userid", "type": ["null", "string"]},
+        {"name": "domain_sessionid", "type": ["null", "string"]},
+        {"name": "domain_sessionidx", "type": ["null", "long"]},
+        {"name": "network_userid", "type": ["null", "string"]},
+        {"name": "geo_country", "type": ["null", "string"]},
+        {"name": "geo_region", "type": ["null", "string"]},
+        {"name": "geo_city", "type": ["null", "string"]},
+        {"name": "useragent", "type": ["null", "string"]},
+        {"name": "language", "type": ["null", "string"]},
+        {"name": "category", "type": ["null", "string"]},
+        {"name": "action", "type": ["null", "string"]},
+        {"name": "label", "type": ["null", "string"]},
+        {"name": "property", "type": ["null", "string"]},
+        {"name": "value", "type": ["null", "string"]},
+        {"name": "contexts", "type": {"type": "array", "items": {
+            "type": "record", 
+            "name": "self_describing_context", "fields": [
+                {"name": "schema", "type": "string"},
+                {"name": "data", "type": "string"}
+            ]
+        }}},
+        {"name": "event", "type": {
+            "type": "record", "name": "self_describing_event", "fields": [
+                {"name": "schema", "type": "string"},
+                {"name": "data", "type": "string"}
+            ]
+        }}
+    ]
+}
+
+ATOMIC_AVRO = parse_schema(ATOMIC_AVRO_SCHEMA)
+
+
+def to_avro(e: AtomicEvent):
+    o = BytesIO()
+    d = e.model_dump(mode="json", by_alias=True)
+    # json encode context and event data
+    for i, context in enumerate(d["contexts"]):
+        d["contexts"][i]["data"] = orjson.dumps(context["data"]).decode("utf-8")
+    d["event"]["data"] = orjson.dumps(d["event"]["data"]).decode("utf-8")
+    print(d)
+    schemaless_writer(o, ATOMIC_AVRO, d)
+    return o.getvalue()
+
+
+def from_avro(b: bytes) -> AtomicEvent:
+    i = BytesIO(b)
+    try:
+        d = schemaless_reader(i, ATOMIC_AVRO)
+    except EOFError:
+        raise ValueError(f"Invalid AVRO message: {b}")
+    # json decode context and event data
+    for i, context in enumerate(d["contexts"]):
+        d["contexts"][i]["data"] = orjson.loads(context["data"])
+    d["event"]["data"] = orjson.loads(d["event"]["data"])
+    return AtomicEvent.model_validate(d)

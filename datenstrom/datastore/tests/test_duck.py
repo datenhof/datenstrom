@@ -9,7 +9,6 @@ def test_atomic_storage_schema():
         platform="test",
         event_vendor="io.datenstrom",
         event_name="atomic",
-        event_format="jsonschema",
         event_version="1-0-0",
         tstamp="2021-01-01T00:00:00.000Z",
         collector_tstamp="2021-01-01T00:00:00.000Z",
@@ -22,15 +21,14 @@ def test_atomic_storage_schema():
                 "event_key": "somedata",
             }
         ),
-        contexts={
-            "iglu:io.datenstrom/context/jsonschema/1-0-0":
+        contexts=[
             SelfDescribingContext(
                 schema="iglu:io.datenstrom/context/jsonschema/1-0-0",
                 data={
                     "test": "test",
                 }
             )
-        }
+        ]
     )
     duck_rel = get_duck_relation_from_atomic_events([ae])
     assert duck_rel is not None
@@ -38,7 +36,7 @@ def test_atomic_storage_schema():
     assert len(result) == 1
     assert result[0][0] == "123"
     assert result[0][1] == "localhost"
-    result = duck_rel.query("atomic", "SELECT map_keys(contexts)[1] FROM atomic")
+    result = duck_rel.query("atomic", "SELECT struct_extract(contexts[1], 'schema') FROM atomic")
     context_schema = result.fetchone()
     assert context_schema[0] == "iglu:io.datenstrom/context/jsonschema/1-0-0"
     result = duck_rel.query("atomic", "SELECT event.schema, json(event.data)->>'$.event_key' FROM atomic")

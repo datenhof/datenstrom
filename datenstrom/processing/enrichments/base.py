@@ -41,10 +41,10 @@ class TemporaryAtomicEvent():
 
     def add_context(self, context: SelfDescribingContext) -> None:
         if "contexts" not in self.atomic:
-            self.atomic["contexts"] = {}
-        if context.schema_name in self.atomic["contexts"]:
+            self.atomic["contexts"] = list()
+        if context.schema_name in [x.schema_name for x in self.atomic["contexts"]]:
             raise ValueError(f"Context {context.schema_name} already exists")
-        self.atomic["contexts"][context.schema_name] = context
+        self.atomic["contexts"].append(context)
 
     def has_context(self, schema_name: str) -> bool:
         if "contexts" not in self.atomic:
@@ -76,12 +76,9 @@ class TemporaryAtomicEvent():
 
     def get_event(self) -> Optional[SelfDescribingEvent]:
         return self.atomic.get("event")
-    
+
     def get_contexts(self) -> List[SelfDescribingContext]:
-        context_dict: Dict[str, SelfDescribingContext] = self.atomic.get("contexts")
-        if not context_dict:
-            return list()
-        return list(context_dict.values())
+        return self.atomic.get("contexts", [])
 
 
 class BaseEnrichment(ABC):

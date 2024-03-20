@@ -64,8 +64,6 @@ class BaseConfig(BaseSettings):
     authentication_aud: Optional[str] = None
     authentication_iss_jwk_urls: Optional[Dict[str, str]] = None
 
-    tenant_lookup_endpoint: Optional[str] = None
-
     default_cache_ttl: int = 3600
     none_cache_ttl: int = 60
 

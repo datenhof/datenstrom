@@ -3,7 +3,6 @@ import jwt
 from unittest.mock import patch
 
 from datenstrom.processing.enrichments.geoip import GeoIPEnrichment
-from datenstrom.processing.enrichments.tenant import TenantEnrichment
 from datenstrom.processing.enrichments.authentication import AuthenticationEnrichment
 from datenstrom.processing.enrichments.campaign import CampaignEnrichment
 from datenstrom.processing.enrichments.base import TemporaryAtomicEvent, CollectorPayload
@@ -46,7 +45,6 @@ def generate_jwt_token():
 CONFIG = get_test_settings()
 CONFIG.authentication_public_key = KEY_PUBLIC
 CONFIG.download_geoip_db = True
-CONFIG.tenant_lookup_endpoint = "https://datenstrom.io/tenant_lookup"
 
 
 TEST_EVENT1 = CollectorPayload(
@@ -79,17 +77,3 @@ def test_authentication():
     ev = TemporaryAtomicEvent(TEST_EVENT1)
     a.enrich(ev)
     assert ev["collector_auth"] == "my_user"
-
-
-@patch("datenstrom.processing.enrichments.tenant.requests.get")
-def test_tenant_lookup(mock_get):
-    mock_get.return_value.status_code = 200
-    mock_get.return_value.json.return_value = {'tenant': 'my_tenant'}
-    t = TenantEnrichment(config=CONFIG)
-    ev = TemporaryAtomicEvent(TEST_EVENT1)
-    t.enrich(ev)
-    assert ev["tenant"] == "my_tenant"
-    assert mock_get.call_count == 1
-    mock_get.assert_called_once_with(
-        "https://datenstrom.io/tenant_lookup?hostname=example.com"
-    )

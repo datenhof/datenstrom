@@ -41,7 +41,6 @@ def test_atomic_schema():
         platform="test",
         event_vendor="io.datenstrom",
         event_name="atomic",
-        event_format="jsonschema",
         event_version="1-0-0",
         tstamp="2021-01-01T00:00:00.000Z",
         collector_tstamp="2021-01-01T00:00:00.000Z",
@@ -54,15 +53,14 @@ def test_atomic_schema():
                 "test": "test",
             }
         ),
-        contexts={
-            "iglu:io.datenstrom/context/jsonschema/1-0-0":
+        contexts=[
             SelfDescribingContext(
                 schema="iglu:io.datenstrom/context/jsonschema/1-0-0",
                 data={
                     "test": "test",
                 }
             )
-        }
+        ]
     )
     r.validate("iglu:io.datenstrom/atomic/jsonschema/1-0-0", ae.model_dump(mode="json", by_alias=True))
     assert r.is_valid("iglu:io.datenstrom/atomic/jsonschema/1-0-0", ae.model_dump(mode="json", by_alias=True))

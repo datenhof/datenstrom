@@ -10,7 +10,6 @@ from datenstrom.processing.enrichments.transformer import TransformEnrichment, t
 from datenstrom.processing.enrichments.base import TemporaryAtomicEvent, BaseEnrichment, RemoteEnrichmentConfig
 from datenstrom.processing.enrichments.postprocessing import PostProcessingEnrichment
 from datenstrom.processing.enrichments.geoip import GeoIPEnrichment
-from datenstrom.processing.enrichments.tenant import TenantEnrichment
 from datenstrom.processing.enrichments.payload import ContextExtractionEnrichment, EventExtractionEnrichment
 from datenstrom.processing.enrichments.campaign import CampaignEnrichment
 from datenstrom.processing.enrichments.device import DeviceEnrichment
@@ -69,8 +68,6 @@ class RawProcessor():
         self.enrichments.append(TransformEnrichment(config=config))
         self.enrichments.append(EventExtractionEnrichment(config=config, registry=self.registry))
         self.enrichments.append(ContextExtractionEnrichment(config=config, registry=self.registry))
-        if config.get("tenant_lookup_endpoint"):
-            self.enrichments.append(TenantEnrichment(config=config))
         if config.get("geoip_enabled"):
             self.enrichments.append(GeoIPEnrichment(config=config))
         if config.get("campaign_enrichment_enabled"):
