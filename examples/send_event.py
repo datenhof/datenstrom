@@ -1,13 +1,13 @@
 from snowplow_tracker import (
     Snowplow, EmitterConfiguration, Subject, TrackerConfiguration,
-    SelfDescribingJson, SelfDescribing, PageView
+    SelfDescribingJson, SelfDescribing, PageView, StructuredEvent
 )
 
 tracker_config = TrackerConfiguration()
 emitter_config = EmitterConfiguration()
 s = Subject()
 s.set_user_id('user_id')
-t = Snowplow.create_tracker(namespace='namespace', endpoint='http://localhost:8001',
+t = Snowplow.create_tracker(namespace='namespace', endpoint='http://localhost:8000',
                             tracker_config=tracker_config, emitter_config=emitter_config,
                             subject=s)
 page_view = PageView(
@@ -23,5 +23,9 @@ link_click = SelfDescribing(
   ),
 )
 t.track(link_click)
+
+se = StructuredEvent(category="cat", action="act",
+                     value="val", label="lab")
+t.track(se)
 
 t.flush()

@@ -558,7 +558,7 @@ TRANSACTION_ITEM_SCHEMA = {
 
 CAMPAIGN_ATTRIBUTION_SCHEMA = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "description": "Schema for a transaction item",
+    "description": "Schema for a campaign context",
     "self": {
         "vendor": "io.datenstrom",
         "name": "campaign_attribution",
@@ -616,7 +616,7 @@ CAMPAIGN_ATTRIBUTION_SCHEMA = {
 
 DEVICE_INFO_SCHEMA = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "description": "Schema for a transaction item",
+    "description": "Schema for device information",
     "self": {
         "vendor": "io.datenstrom",
         "name": "device_info",

@@ -106,15 +106,15 @@ class EventExtractionEnrichment(BaseEnrichment):
 
         # Flatten Structured Event
         sd_event = event.get_event()
-        if "category" in sd_event.data:
+        if "category" in sd_event.data and isinstance(sd_event.data["category"], str):
             event.set_value("category", sd_event.data["category"])
-        if "action" in sd_event.data:
+        if "action" in sd_event.data and isinstance(sd_event.data["action"], str):
             event.set_value("action", sd_event.data["action"])
-        if "label" in sd_event.data:
+        if "label" in sd_event.data and isinstance(sd_event.data["label"], str):
             event.set_value("label", sd_event.data["label"])
-        if "property" in sd_event.data:
+        if "property" in sd_event.data and isinstance(sd_event.data["property"], str):
             event.set_value("property", sd_event.data["property"])
-        if "value" in sd_event.data:
+        if "value" in sd_event.data and isinstance(sd_event.data["value"], str):
             event.set_value("value", sd_event.data["value"])
 
 
