@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "datenstrom"
-version = "0.1.1"
+version = "0.1.2"
 description = "Datenstrom Mono Repo"
 authors = ["Matthias <matthias@allitsch-wutte.com>"]
 readme = "README.md"
