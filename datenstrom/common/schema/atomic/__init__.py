@@ -81,6 +81,10 @@ class AtomicEvent(BaseModel):
     useragent: Optional[str] = None
     language: Optional[str] = None
 
+    # Identifiers
+    device_id: Optional[str] = None
+    tenant_id: Optional[str] = None
+
     # Structured Event
     category: Optional[str] = None
     action: Optional[str] = None
@@ -270,6 +274,15 @@ ATOMIC_EVENT_SCHEMA = {
             "description": "Language of the user"
         },
 
+        "device_id": {
+            "type": ["string", "null"],
+            "description": "ID of the device"
+        },
+        "tenant_id": {
+            "type": ["string", "null"],
+            "description": "ID of the tenant"
+        },
+
         "category": {
             "type": ["string", "null"],
             "description": "Category of the event"
@@ -373,6 +386,8 @@ ATOMIC_AVRO_SCHEMA = {
         {"name": "geo_city", "type": ["null", "string"]},
         {"name": "useragent", "type": ["null", "string"]},
         {"name": "language", "type": ["null", "string"]},
+        {"name": "device_id", "type": ["null", "string"]},
+        {"name": "tenant_id", "type": ["null", "string"]},
         {"name": "category", "type": ["null", "string"]},
         {"name": "action", "type": ["null", "string"]},
         {"name": "label", "type": ["null", "string"]},
